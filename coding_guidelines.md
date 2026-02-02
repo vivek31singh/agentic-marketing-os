@@ -26,9 +26,9 @@ app/
       settings/
         page.tsx
 components/
-  ui/ (Primitives: Button, Card, Badge, Avatar, ProgressBar, Tag, MetricStat, Accordion)
+  ui/ (Primitives: Button, Card, Badge, Avatar, ProgressBar, Tag, MetricStat, Accordion, SegmentedControl)
   layout/ (Shell parts: Sidebar, Topbar)
-  domains/ (Feature specific: AgentCard, ConflictPanel, Timeline)
+  domains/ (Feature specific: AgentScorecard, ConflictPanel, Timeline)
   providers/
 data/
   mockData.ts (Interfaces and Mock Data)
@@ -45,7 +45,7 @@ hooks/
 ```
 
 ## Naming Conventions
-Files: PascalCase for components (e.g., `AgentCard.tsx`), camelCase for utilities/hooks (e.g., `useMockData.ts`). Directories: kebab-case or camelCase. Components: PascalCase. Functions/Variables: camelCase. Constants: UPPER_SNAKE_CASE.
+Files: PascalCase for components (e.g., `AgentScorecard.tsx`), camelCase for utilities/hooks (e.g., `useMockData.ts`). Directories: kebab-case or camelCase. Components: PascalCase. Functions/Variables: camelCase. Constants: UPPER_SNAKE_CASE.
 
 ## Coding Standards
 - Use TypeScript strict mode.

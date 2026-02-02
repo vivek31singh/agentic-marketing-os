@@ -13,12 +13,11 @@ To create a production-ready, multi-page UI for the Agentic Marketing OS that re
 - **Workspace Settings:** Implemented with views for General Information, Integrations, and Guardrails.
 - **Thread Detail View & Interactivity:** Implemented with domain components for `ThreadTimeline` and `ConflictPanel`. Interactivity (conflict resolution approval, recovery actions) has been added to key modules using client-side state management.
 - **Send Command Functionality:** Users can now send commands in the Thread Detail View, appending new user events to the timeline dynamically.
+- **Agent Scorecards:** Implemented in the Right Rail (and specific page contexts) to display active agent details (name, role) and performance metrics (Accuracy, Latency).
+- **View Toggles:** Implemented in the Thread Detail view to switch between Standard, Logic, and Debug modes, allowing users to inspect logic chains and metadata.
 
 ## Complexity
 Moderate to High. While no backend logic is required, the project demands a high degree of UI fidelity, complex component composition (timelines, conflict panels, accordions), specific routing architecture, and intricate state management for simulating agent interactions and workflows.
 
 ## Tech Stack
 Next.js 14+ (App Router), TypeScript, Tailwind CSS, Lucide React (Icons), React Hook Form (for inputs), Class Variance Authority (CVA) for component variants, Framer Motion (for transitions/accordions).
-
-
----
