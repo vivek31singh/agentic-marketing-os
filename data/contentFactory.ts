@@ -21,6 +21,18 @@ export interface ContentThread extends Thread {
   assignedAgent?: Agent;
   dueDate: string;
   approvalStage: 'draft' | 'review' | 'final' | 'published';
+  errorMessage?: string;
+  conflict?: {
+    id: string;
+    reason: string;
+    options: {
+      id: string;
+      agent: Agent;
+      description: string;
+      outcome: string;
+      label: string;
+    }[];
+  };
 }
 
 // Mock content factory metrics
@@ -75,7 +87,7 @@ export const contentThreads: ContentThread[] = [
   {
     id: 'thread-content-1',
     title: 'Q1 Blog Strategy: AI in Marketing',
-    status: 'in-progress',
+    status: 'error',
     objective: 'Create comprehensive blog series on AI applications in marketing automation',
     contentType: 'blog',
     wordCount: 2500,
@@ -83,6 +95,7 @@ export const contentThreads: ContentThread[] = [
     assignedAgent: contentAgents[0],
     dueDate: '2024-02-15',
     approvalStage: 'review',
+    errorMessage: 'Generation Failed – ERR_TIMEOUT_LLM',
     events: [],
   },
   {
@@ -96,6 +109,26 @@ export const contentThreads: ContentThread[] = [
     assignedAgent: contentAgents[1],
     dueDate: '2024-02-20',
     approvalStage: 'draft',
+    conflict: {
+      id: 'conflict-1',
+      reason: 'Brand Voice Violation: Tone is too aggressive',
+      options: [
+        {
+          id: 'opt-1',
+          agent: contentAgents[0],
+          description: 'rewrite with "persuasive but gentle" tone',
+          outcome: 'Better brand alignment',
+          label: 'Soft Tone',
+        },
+        {
+          id: 'opt-2',
+          agent: contentAgents[1],
+          description: 'Keep "high urgency" tone for conversion',
+          outcome: 'Higher potential CTR',
+          label: 'Urgent Tone',
+        }
+      ]
+    },
     events: [],
   },
   {

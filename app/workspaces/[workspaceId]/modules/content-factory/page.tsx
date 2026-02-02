@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { MetricStat } from '@/components/ui/MetricStat';
 import { ArrowRight, AlertTriangle, CheckCircle, Clock, RefreshCw, Wrench, XCircle } from 'lucide-react';
-import { contentFactoryThreads, contentFactoryMetrics } from '@/data/contentFactory';
+import { contentThreads, contentFactoryMetrics } from '@/data/contentFactory';
 
 interface ConflictOption {
   id: string;
@@ -76,10 +76,10 @@ export default function ContentFactoryPage() {
   const getRecoveryButton = (threadId: string, actionType: 'retry' | 'autofix' | 'ignore') => {
     const state = recoveryStates[threadId];
     const isActive = state?.type === actionType;
-    
+
     if (isActive && state.status === 'loading') {
       return (
-        <Button variant="secondary" size="sm" disabled className="opacity-70">
+        <Button variant="outline" size="sm" disabled className="opacity-70">
           <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
           {state.label}...
         </Button>
@@ -126,22 +126,33 @@ export default function ContentFactoryPage() {
 
       {/* Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {contentFactoryMetrics.map((metric) => (
-          <MetricStat
-            key={metric.id}
-            label={metric.label}
-            value={metric.value}
-            change={metric.change}
-            trend={metric.trend}
-          />
-        ))}
+        <MetricStat
+          label="Content Velocity"
+          value={contentFactoryMetrics.contentVelocity.current}
+          change={contentFactoryMetrics.contentVelocity.current - contentFactoryMetrics.contentVelocity.target}
+        />
+        <MetricStat
+          label="Pending Approval"
+          value={contentFactoryMetrics.pendingApproval}
+          change={0}
+        />
+        <MetricStat
+          label="Articles Published"
+          value={contentFactoryMetrics.articlesPublished}
+          change={5}
+        />
+        <MetricStat
+          label="Active Writers"
+          value={contentFactoryMetrics.activeWriters}
+          change={1}
+        />
       </div>
 
       {/* Active Threads */}
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-neutral-900">Active Threads</h2>
         <div className="grid grid-cols-1 gap-4">
-          {contentFactoryThreads.map((thread) => {
+          {contentThreads.map((thread) => {
             const selectedOptionId = selectedConflicts[thread.id];
             const selectedOption = thread.conflict?.options.find((opt) => opt.id === selectedOptionId);
             const hasConflict = thread.conflict !== undefined;
@@ -158,8 +169,8 @@ export default function ContentFactoryPage() {
                           thread.status === 'active'
                             ? 'success'
                             : thread.status === 'error'
-                            ? 'danger'
-                            : 'neutral'
+                              ? 'error'
+                              : 'default'
                         }
                       >
                         {thread.status}
@@ -182,19 +193,19 @@ export default function ContentFactoryPage() {
                 </div>
 
                 {/* Conflict Resolution Section */}
-                {hasConflict && (
+                {hasConflict && thread.conflict && (
                   <div className="mt-4 p-4 bg-warning-50 rounded-lg border border-warning-200">
                     <div className="flex items-center gap-2 mb-3">
                       <AlertTriangle className="w-4 h-4 text-warning-600" />
                       <span className="text-sm font-medium text-warning-900">Conflict Detected</span>
                     </div>
                     <p className="text-sm text-warning-800 mb-3">{thread.conflict.reason}</p>
-                    
+
                     {selectedOption ? (
                       <div className="bg-success-50 border border-success-200 rounded-md p-3">
                         <div className="flex items-center gap-2 text-success-700">
                           <CheckCircle className="w-4 h-4" />
-                          <span className="text-sm font-medium">Resolved: {selectedOption.agent}'s option selected</span>
+                          <span className="text-sm font-medium">Resolved: {selectedOption.agent.name}&apos;s option selected</span>
                         </div>
                         <p className="text-xs text-success-600 mt-1">{selectedOption.outcome}</p>
                       </div>
@@ -205,17 +216,16 @@ export default function ContentFactoryPage() {
                           return (
                             <div
                               key={option.id}
-                              className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${
-                                isSelected
-                                  ? 'bg-primary-50 border-primary-300'
-                                  : 'bg-white border-neutral-200 hover:border-neutral-300'
-                              }`}
+                              className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${isSelected
+                                ? 'bg-primary-50 border-primary-300'
+                                : 'bg-white border-neutral-200 hover:border-neutral-300'
+                                }`}
                             >
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-sm font-medium text-neutral-900">{option.agent}</span>
+                                  <span className="text-sm font-medium text-neutral-900">{option.agent.name}</span>
                                   {isSelected && (
-                                    <Badge variant="primary" size="sm">Selected</Badge>
+                                    <Badge variant="primary">Selected</Badge>
                                   )}
                                 </div>
                                 <p className="text-sm text-neutral-600">{option.description}</p>
@@ -238,12 +248,12 @@ export default function ContentFactoryPage() {
 
                 {/* Recovery Actions Section */}
                 {hasError && (
-                  <div className="mt-4 p-4 bg-danger-50 rounded-lg border border-danger-200">
+                  <div className="mt-4 p-4 bg-error-50 rounded-lg border border-error-200">
                     <div className="flex items-center gap-2 mb-3">
-                      <XCircle className="w-4 h-4 text-danger-600" />
-                      <span className="text-sm font-medium text-danger-900">Action Required</span>
+                      <XCircle className="w-4 h-4 text-error-600" />
+                      <span className="text-sm font-medium text-error-900">Action Required</span>
                     </div>
-                    <p className="text-sm text-danger-800 mb-3">{thread.errorMessage || 'An error occurred during processing.'}</p>
+                    <p className="text-sm text-error-800 mb-3">{thread.errorMessage || 'An error occurred during processing.'}</p>
                     <div className="flex items-center gap-2">
                       {getRecoveryButton(thread.id, 'retry')}
                       {getRecoveryButton(thread.id, 'autofix')}

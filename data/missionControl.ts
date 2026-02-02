@@ -3,7 +3,7 @@
 export interface StatusChip {
   id: string;
   label: string;
-  variant: 'success' | 'warning' | 'danger' | 'info' | 'neutral';
+  variant: 'success' | 'warning' | 'error' | 'info' | 'default';
   count?: number;
 }
 
@@ -40,8 +40,8 @@ export const mockStatusChips: StatusChip[] = [
   { id: '1', label: 'System Online', variant: 'success' },
   { id: '2', label: 'All Services Operational', variant: 'success' },
   { id: '3', label: 'Pending Actions', variant: 'warning', count: 3 },
-  { id: '4', label: 'Critical Issues', variant: 'danger', count: 0 },
-  { id: '5', label: 'Last Sync: 2 min ago', variant: 'neutral' },
+  { id: '4', label: 'Critical Issues', variant: 'error', count: 0 },
+  { id: '5', label: 'Last Sync: 2 min ago', variant: 'default' },
 ];
 
 export const mockDashboardMetrics: DashboardMetric[] = [

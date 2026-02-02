@@ -103,6 +103,28 @@ export const mockWorkspace: Workspace = {
   health: 94,
 };
 
+// Mock Workspaces (used by root page)
+export const workspaces: Workspace[] = [
+  {
+    id: 'workspace-1',
+    name: 'TechStart',
+    status: 'active',
+    health: 94,
+  },
+  {
+    id: 'workspace-2',
+    name: 'GrowthLabs',
+    status: 'active',
+    health: 87,
+  },
+  {
+    id: 'workspace-3',
+    name: 'ContentStudio',
+    status: 'idle',
+    health: 72,
+  },
+];
+
 // Mock Modules
 export const mockModules: Module[] = [
   {
@@ -130,3 +152,55 @@ export const mockModules: Module[] = [
     activeThreadsCount: 3,
   },
 ];
+
+// Extended Workspace interface for dashboard
+export interface WorkspaceWithModules {
+  id: string;
+  name: string;
+  status: 'active' | 'idle' | 'error';
+  health: number;
+  modules: Array<Module & { active: boolean }>;
+}
+
+// Mock workspaces with modules for the dashboard
+export const mockWorkspacesWithModules: WorkspaceWithModules[] = [
+  {
+    id: 'workspace-1',
+    name: 'TechStart',
+    status: 'active',
+    health: 94,
+    modules: [
+      { id: 'module-1', name: 'SEO_Cluster', description: 'Search engine optimization and technical health monitoring', activeThreadsCount: 12, active: true },
+      { id: 'module-2', name: 'Content_Factory', description: 'Content creation and publishing workflows', activeThreadsCount: 8, active: true },
+      { id: 'module-3', name: 'Social_Growth', description: 'Social media management and trend analysis', activeThreadsCount: 5, active: true },
+      { id: 'module-4', name: 'SaaS_Launch_Ops', description: 'Launch coordination and asset management', activeThreadsCount: 3, active: false },
+    ],
+  },
+  {
+    id: 'workspace-2',
+    name: 'GrowthLabs',
+    status: 'active',
+    health: 87,
+    modules: [
+      { id: 'module-1', name: 'SEO_Cluster', description: 'Search engine optimization and technical health monitoring', activeThreadsCount: 6, active: true },
+      { id: 'module-2', name: 'Content_Factory', description: 'Content creation and publishing workflows', activeThreadsCount: 4, active: true },
+    ],
+  },
+  {
+    id: 'workspace-3',
+    name: 'ContentStudio',
+    status: 'idle',
+    health: 72,
+    modules: [
+      { id: 'module-2', name: 'Content_Factory', description: 'Content creation and publishing workflows', activeThreadsCount: 0, active: false },
+    ],
+  },
+];
+
+// Export mockData object for backwards compatibility
+export const mockData = {
+  workspaces: mockWorkspacesWithModules,
+  agents: mockAgents,
+  modules: mockModules,
+  workspace: mockWorkspace,
+};

@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { 
-  Settings, 
-  Save, 
-  Plug, 
-  Shield, 
-  Info, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Settings,
+  Save,
+  Plug,
+  Shield,
+  Info,
+  CheckCircle,
+  XCircle,
   AlertCircle,
   RefreshCw,
   Link2,
@@ -26,11 +26,11 @@ export default function WorkspaceSettingsPage() {
   const [settings, setSettings] = useState(workspaceSettings);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  
+
   const handleSave = () => {
     setIsSaving(true);
     setSaveMessage(null);
-    
+
     // Simulate save operation
     setTimeout(() => {
       setIsSaving(false);
@@ -42,7 +42,7 @@ export default function WorkspaceSettingsPage() {
   const toggleGuardrail = (id: string) => {
     setSettings({
       ...settings,
-      guardrails: settings.guardrails.map(gr => 
+      guardrails: settings.guardrails.map(gr =>
         gr.id === id ? { ...gr, enabled: !gr.enabled } : gr
       )
     });
@@ -51,7 +51,7 @@ export default function WorkspaceSettingsPage() {
   const updateGuardrailValue = (id: string, value: number) => {
     setSettings({
       ...settings,
-      guardrails: settings.guardrails.map(gr => 
+      guardrails: settings.guardrails.map(gr =>
         gr.id === id ? { ...gr, value } : gr
       )
     });
@@ -64,7 +64,7 @@ export default function WorkspaceSettingsPage() {
       case 'disconnected':
         return <XCircle className="w-4 h-4 text-neutral-400" />;
       case 'error':
-        return <AlertCircle className="w-4 h-4 text-danger" />;
+        return <AlertCircle className="w-4 h-4 text-error" />;
     }
   };
 
@@ -73,9 +73,9 @@ export default function WorkspaceSettingsPage() {
       case 'connected':
         return <Badge variant="success">Connected</Badge>;
       case 'disconnected':
-        return <Badge variant="neutral">Disconnected</Badge>;
+        return <Badge variant="default">Disconnected</Badge>;
       case 'error':
-        return <Badge variant="danger">Error</Badge>;
+        return <Badge variant="error">Error</Badge>;
     }
   };
 
@@ -95,11 +95,10 @@ export default function WorkspaceSettingsPage() {
           </div>
         </div>
         {saveMessage && (
-          <div className={`px-4 py-2 rounded-lg text-sm ${
-            saveMessage.type === 'success' 
-              ? 'bg-success/10 text-success' 
-              : 'bg-danger/10 text-danger'
-          }`}>
+          <div className={`px-4 py-2 rounded-lg text-sm ${saveMessage.type === 'success'
+              ? 'bg-success/10 text-success'
+              : 'bg-error/10 text-error'
+            }`}>
             {saveMessage.text}
           </div>
         )}
@@ -144,10 +143,10 @@ export default function WorkspaceSettingsPage() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-neutral-700">Created</label>
             <div className="px-4 py-2 bg-neutral-50 rounded-lg text-sm text-neutral-600">
-              {new Date(settings.createdAt).toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+              {new Date(settings.createdAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
               })}
             </div>
           </div>
@@ -155,10 +154,10 @@ export default function WorkspaceSettingsPage() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-neutral-700">Last Updated</label>
             <div className="px-4 py-2 bg-neutral-50 rounded-lg text-sm text-neutral-600">
-              {new Date(settings.updatedAt).toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+              {new Date(settings.updatedAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
               })}
             </div>
           </div>
@@ -247,17 +246,16 @@ export default function WorkspaceSettingsPage() {
           {settings.guardrails.map((guardrail) => (
             <div
               key={guardrail.id}
-              className={`p-4 border rounded-lg transition-colors ${
-                guardrail.enabled 
-                  ? 'border-neutral-200 bg-white' 
+              className={`p-4 border rounded-lg transition-colors ${guardrail.enabled
+                  ? 'border-neutral-200 bg-white'
                   : 'border-neutral-100 bg-neutral-50 opacity-60'
-              }`}
+                }`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
                     <h3 className="font-medium text-neutral-900">{guardrail.name}</h3>
-                    <Badge variant="neutral">{guardrail.type}</Badge>
+                    <Badge variant="default">{guardrail.type}</Badge>
                   </div>
                   <div className="mt-3 flex items-center gap-4">
                     <div className="flex items-center gap-2">
@@ -281,12 +279,10 @@ export default function WorkspaceSettingsPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <div className={`relative w-10 h-5 rounded-full transition-colors ${
-                      guardrail.enabled ? 'bg-primary' : 'bg-neutral-300'
-                    }`}>
-                      <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                        guardrail.enabled ? 'translate-x-5' : ''
-                      }`} />
+                    <div className={`relative w-10 h-5 rounded-full transition-colors ${guardrail.enabled ? 'bg-primary' : 'bg-neutral-300'
+                      }`}>
+                      <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${guardrail.enabled ? 'translate-x-5' : ''
+                        }`} />
                     </div>
                     <input
                       type="checkbox"
@@ -307,7 +303,7 @@ export default function WorkspaceSettingsPage() {
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button 
+        <Button
           onClick={handleSave}
           disabled={isSaving}
           className="flex items-center gap-2"

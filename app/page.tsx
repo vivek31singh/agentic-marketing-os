@@ -1,109 +1,88 @@
 import Link from 'next/link';
-import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { MetricStat } from '@/components/ui/MetricStat';
 import { workspaces } from '@/data/mockData';
-import { ArrowRight, LayoutDashboard, Zap, Shield } from 'lucide-react';
+import {
+  ArrowRight,
+  LayoutDashboard,
+  Zap,
+  Shield,
+  Globe,
+  Rocket,
+  Cpu,
+  Sparkles
+} from 'lucide-react';
 
 export default function RootPage() {
+  const primaryWorkspace = workspaces[0];
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-950 dark:to-neutral-900 flex items-center justify-center p-6">
-      <div className="w-full max-w-6xl">
-        {/* Header Section */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 text-white mb-6 shadow-lg shadow-primary-500/30">
-            <LayoutDashboard className="w-8 h-8" />
+    <main className="min-h-screen bg-[#030303] text-white selection:bg-primary-500/30 overflow-hidden relative">
+      {/* Dynamic Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] bg-primary-900/20 blur-[120px] rounded-full animate-pulse" />
+        <div className="absolute top-[20%] -right-[10%] w-[50%] h-[50%] bg-secondary-900/10 blur-[100px] rounded-full" />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-24 pb-12 min-h-screen flex flex-col items-center justify-center">
+        {/* Hero Section */}
+        <div className="text-center space-y-8 mb-16 max-w-4xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md animate-fade-in">
+            <Sparkles className="w-4 h-4 text-primary-400" />
+            <span className="text-xs font-bold tracking-widest uppercase">Agentic Marketing OS v1.0</span>
           </div>
-          <h1 className="text-4xl font-bold text-neutral-900 dark:text-white mb-3">
-            Agentic Marketing OS
+
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40">
+            ENGINEERING THE <br /> FUTURE OF GROWTH
           </h1>
-          <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
-            Select a workspace to access your AI-powered marketing operations
+
+          <p className="text-xl text-neutral-400 max-w-2xl mx-auto font-medium">
+            Deploy an autonomous workforce of specialized AI agents. Audit, optimize, and execute marketing maneuvers at scale.
           </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <Link href={`/workspaces/${primaryWorkspace.id}/mission-control`}>
+              <Button size="lg" className="h-14 px-10 text-lg rounded-full shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] bg-primary-600 hover:bg-primary-500 transition-all font-bold">
+                Enter Agentic OS
+                <ArrowRight className="w-6 h-6 ml-2" />
+              </Button>
+            </Link>
+            <Button variant="outline" size="lg" className="h-14 px-10 text-lg rounded-full border-white/10 bg-white/5 hover:bg-white/10 text-white font-bold backdrop-blur-sm">
+              View Documentation
+            </Button>
+          </div>
         </div>
 
-        {/* Workspaces Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {workspaces.map((workspace) => (
-            <Card
-              key={workspace.id}
-              className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/50 backdrop-blur-sm"
-            >
-              <div className="p-6">
-                {/* Workspace Header */}
-                <div className="flex items-start justify-between mb-4">
+        {/* Feature Grid - Modern Glassmorphism */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
+          {[
+            { icon: Cpu, title: 'Multi-Agent Logic', desc: 'Conflict resolution & logic chain verification.' },
+            { icon: Zap, title: 'Real-time Maneuvers', desc: 'Automated execution based on live market data.' },
+            { icon: Shield, title: 'Brand Guardrails', desc: 'Hardware-level compliance and safety protocols.' },
+          ].map((feature, i) => (
+            <div key={i} className="group p-8 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-sm hover:bg-white/[0.06] transition-all hover:border-primary-500/50">
+              <feature.icon className="w-10 h-10 text-primary-400 mb-4 group-hover:scale-110 transition-transform" />
+              <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
+              <p className="text-neutral-500 font-medium leading-relaxed">{feature.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Workspace Quick Switch Preview - Visual Hint of Discord Switcher */}
+        <div className="mt-24 pt-12 border-t border-white/5 w-full text-center">
+          <p className="text-sm font-bold tracking-widest uppercase text-neutral-600 mb-8">Active Strategic Units</p>
+          <div className="flex flex-wrap justify-center gap-4">
+            {workspaces.map((w) => (
+              <Link key={w.id} href={`/workspaces/${w.id}/mission-control`}>
+                <div className="px-6 py-3 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-primary-500/30 hover:bg-white/5 transition-all text-neutral-500 hover:text-white cursor-pointer group">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/30 flex items-center justify-center">
-                      <LayoutDashboard className="w-6 h-6 text-primary-600 dark:text-primary-400" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg text-neutral-900 dark:text-white">
-                        {workspace.name}
-                      </h3>
-                      <Badge
-                        variant={workspace.status === 'active' ? 'success' : workspace.status === 'error' ? 'error' : 'neutral'}
-                        className="mt-1"
-                      >
-                        {workspace.status}
-                      </Badge>
-                    </div>
+                    <div className="w-2 h-2 rounded-full bg-success-500 group-hover:animate-ping" />
+                    <span className="font-bold">{w.name}</span>
                   </div>
                 </div>
-
-                {/* Workspace ID */}
-                <div className="text-sm text-neutral-500 dark:text-neutral-400 mb-4 font-mono">
-                  ID: {workspace.id}
-                </div>
-
-                {/* Health Metric */}
-                <div className="mb-6">
-                  <MetricStat
-                    label="System Health"
-                    value={workspace.health}
-                    suffix="%"
-                    trend={workspace.health >= 80 ? 'up' : workspace.health >= 50 ? 'neutral' : 'down'}
-                    icon={<Zap className="w-4 h-4" />}
-                  />
-                </div>
-
-                {/* Action Button */}
-                <Link href={`/workspaces/${workspace.id}`} className="block">
-                  <Button
-                    variant="primary"
-                    className="w-full group-hover:bg-primary-600 transition-colors"
-                  >
-                    Enter Workspace
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
-              </div>
-            </Card>
-          ))}
-
-          {/* Create New Workspace Card */}
-          <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-dashed border-neutral-300 dark:border-neutral-700 bg-transparent hover:border-primary-300 dark:hover:border-primary-700 cursor-pointer">
-            <div className="p-6 h-full flex flex-col items-center justify-center text-center min-h-[280px]">
-              <div className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-neutral-800 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/30 flex items-center justify-center mb-4 transition-colors">
-                <Shield className="w-6 h-6 text-neutral-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors" />
-              </div>
-              <h3 className="font-semibold text-lg text-neutral-700 dark:text-neutral-300 mb-2">
-                Create New Workspace
-              </h3>
-              <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                Set up a new marketing operations environment
-              </p>
-              <div className="mt-4 text-primary-600 dark:text-primary-400 font-medium text-sm flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                Coming Soon
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center mt-12 text-sm text-neutral-500 dark:text-neutral-400">
-          <p>Agentic Marketing OS v1.0 • Built for Production</p>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </main>

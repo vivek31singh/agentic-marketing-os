@@ -91,7 +91,14 @@ export default function SEOClusterPage({ params }: { params: { workspaceId: stri
       {/* Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {mockSEOMetrics.map((metric) => (
-          <MetricStat key={metric.id} metric={metric} />
+          <Card key={metric.id} className="p-4">
+            <MetricStat
+              label={metric.label}
+              value={metric.value}
+              change={metric.status === 'success' ? 2 : metric.status === 'warning' ? 1 : -1}
+            />
+            <div className="mt-2 text-xs text-gray-500">{metric.trend}</div>
+          </Card>
         ))}
       </div>
 
@@ -118,7 +125,7 @@ export default function SEOClusterPage({ params }: { params: { workspaceId: stri
                       <Badge variant={getStatusBadgeVariant(thread.status)}>{thread.status}</Badge>
                     </div>
                     <p className="text-gray-600 mb-3">{thread.objective}</p>
-                    
+
                     {/* Recovery Actions for Error Status */}
                     {thread.status === 'error' && (
                       <div className="flex items-center gap-2 mt-3 p-3 bg-red-50 rounded-lg border border-red-200">

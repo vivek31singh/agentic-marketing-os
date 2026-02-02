@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
@@ -21,7 +23,7 @@ const avatarVariants = cva('relative flex shrink-0 overflow-hidden rounded-full'
 
 export interface AvatarProps
   extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof avatarVariants> {
+  VariantProps<typeof avatarVariants> {
   src?: string;
   alt?: string;
   initials?: string;

@@ -35,7 +35,7 @@ export default function ThreadDetailPage() {
     if (!commandInput.trim() || isSubmitting) return;
 
     setIsSubmitting(true);
-    
+
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -54,7 +54,7 @@ export default function ThreadDetailPage() {
     };
 
     // Update thread with new event
-    setThread(prev => ({
+    setThread((prev: any) => ({
       ...prev,
       events: [...prev.events, newUserEvent],
     }));
@@ -70,7 +70,7 @@ export default function ThreadDetailPage() {
     }
   };
 
-  const conflictEvent = thread.events.find(e => e.type === 'conflict');
+  const conflict = thread.conflict;
 
   return (
     <div className="space-y-6">
@@ -88,7 +88,7 @@ export default function ThreadDetailPage() {
             <p className="text-neutral-500 mt-1">{thread.objective}</p>
           </div>
         </div>
-        <Badge variant={thread.status === 'active' ? 'success' : thread.status === 'error' ? 'error' : 'neutral'}>
+        <Badge variant={thread.status === 'active' ? 'success' : thread.status === 'error' ? 'error' : 'default'}>
           {thread.status}
         </Badge>
       </div>
@@ -104,9 +104,9 @@ export default function ThreadDetailPage() {
       </div>
 
       {/* Conflict Panel */}
-      {conflictEvent && (
+      {conflict && (
         <ConflictPanel
-          conflict={conflictEvent.conflict!}
+          conflict={conflict}
           onResolve={(option) => {
             console.log('Resolved with option:', option);
           }}
@@ -128,7 +128,7 @@ export default function ThreadDetailPage() {
             className="flex-1 px-4 py-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:border-transparent"
             disabled={isSubmitting}
           />
-          <Button 
+          <Button
             onClick={handleSendCommand}
             disabled={!commandInput.trim() || isSubmitting}
           >

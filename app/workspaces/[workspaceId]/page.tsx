@@ -1,11 +1,11 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { 
-  Activity, 
-  TrendingUp, 
-  Users, 
-  FileText, 
+import {
+  Activity,
+  TrendingUp,
+  Users,
+  FileText,
   AlertCircle,
   CheckCircle,
   Clock,
@@ -25,10 +25,10 @@ import { mockData } from '@/data/mockData';
 export default function MissionControlDashboard() {
   const params = useParams();
   const workspaceId = params.workspaceId as string;
-  
+
   // Get workspace data from mock
   const workspace = mockData.workspaces.find(w => w.id === workspaceId);
-  
+
   if (!workspace) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -77,9 +77,7 @@ export default function MissionControlDashboard() {
             <MetricStat
               label="Active Threads"
               value={totalActiveThreads}
-              trend={{ value: 12, direction: 'up' }}
-              icon={<Activity className="w-5 h-5 text-primary-500" />}
-              size="default"
+              change={12}
             />
             <ProgressBar value={75} className="mt-3" />
             <p className="text-xs text-neutral-500 mt-2">75% of capacity utilized</p>
@@ -92,9 +90,7 @@ export default function MissionControlDashboard() {
             <MetricStat
               label="System Health"
               value={`${workspace.health}%`}
-              trend={{ value: 3, direction: 'up' }}
-              icon={<CheckCircle className="w-5 h-5 text-success-500" />}
-              size="default"
+              change={3}
             />
             <ProgressBar value={workspace.health} className="mt-3" variant="success" />
             <p className="text-xs text-neutral-500 mt-2">All systems operational</p>
@@ -107,9 +103,7 @@ export default function MissionControlDashboard() {
             <MetricStat
               label="Active Agents"
               value={8}
-              trend={{ value: 2, direction: 'up' }}
-              icon={<Cpu className="w-5 h-5 text-primary-500" />}
-              size="default"
+              change={2}
             />
             <ProgressBar value={80} className="mt-3" />
             <p className="text-xs text-neutral-500 mt-2">8 of 10 agents active</p>
@@ -122,11 +116,9 @@ export default function MissionControlDashboard() {
             <MetricStat
               label="Active Modules"
               value={`${activeModules}/${totalModules}`}
-              trend={{ value: 0, direction: 'neutral' }}
-              icon={<Layers className="w-5 h-5 text-info-500" />}
-              size="default"
+              change={0}
             />
-            <ProgressBar value={(activeModules / totalModules) * 100} className="mt-3" variant="info" />
+            <ProgressBar value={(activeModules / totalModules) * 100} className="mt-3" variant="primary" />
             <p className="text-xs text-neutral-500 mt-2">{activeModules} modules currently active</p>
           </CardContent>
         </Card>
@@ -141,7 +133,7 @@ export default function MissionControlDashboard() {
             <ArrowUpRight className="w-4 h-4 ml-1" />
           </Button>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {workspace.modules.map((module) => (
             <Card key={module.id} variant="default" className="hover:shadow-md transition-shadow">
@@ -156,7 +148,7 @@ export default function MissionControlDashboard() {
                       <CardDescription className="text-xs mt-0.5">{module.description}</CardDescription>
                     </div>
                   </div>
-                  <Badge variant={module.active ? 'success' : 'neutral'}>
+                  <Badge variant={module.active ? 'success' : 'default'}>
                     {module.active ? 'Active' : 'Inactive'}
                   </Badge>
                 </div>

@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { MetricStat } from '@/components/ui/MetricStat';
 import { socialThreads, socialMetrics } from '@/data/socialGrowth';
-import { ChevronRight, TrendingUp, Users, MessageSquare, Share2 } from 'lucide-react';
+import { ChevronRight, TrendingUp, Users, MessageSquare, Share2, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Avatar } from '@/components/ui/Avatar';
 
 interface ConflictState {
   threadId: string;
@@ -102,7 +103,14 @@ export default function SocialGrowthPage({ params }: { params: { workspaceId: st
       {/* Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {socialMetrics.map((metric) => (
-          <MetricStat key={metric.id} metric={metric} />
+          <Card key={metric.id} className="p-4">
+            <MetricStat
+              label={metric.label}
+              value={metric.value}
+              change={metric.status === 'success' ? 2 : metric.status === 'warning' ? 1 : -1}
+            />
+            <div className="mt-2 text-xs text-gray-500">{metric.trend}</div>
+          </Card>
         ))}
       </div>
 
@@ -129,7 +137,76 @@ export default function SocialGrowthPage({ params }: { params: { workspaceId: st
                       <Badge variant={getStatusBadgeVariant(thread.status)}>{thread.status}</Badge>
                     </div>
                     <p className="text-gray-600 mb-3">{thread.objective}</p>
-                    
+
+                    {/* Conflict Resolution Panel */}
+                    {thread.conflict && (
+                      <div className="mt-4 border border-warning-200 bg-warning-50 rounded-lg overflow-hidden">
+                        <div className="p-3 border-b border-warning-200 flex items-start gap-3">
+                          <AlertTriangle className="w-5 h-5 text-warning-600 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <h4 className="font-semibold text-warning-900 text-sm">Conflict Detected</h4>
+                            <p className="text-sm text-warning-700">{thread.conflict.reason}</p>
+                          </div>
+                        </div>
+
+                        <div className="p-3 bg-white space-y-3">
+                          {thread.conflict.options.map((option) => {
+                            const isSelected = conflictState?.selectedOption === option.label;
+                            const isResolved = conflictState?.isResolved;
+
+                            if (isResolved && !isSelected) return null;
+
+                            return (
+                              <div
+                                key={option.label}
+                                className={`border rounded-lg p-3 transition-all ${isSelected
+                                    ? 'border-success-500 bg-success-50'
+                                    : 'border-neutral-200 hover:border-warning-300'
+                                  }`}
+                              >
+                                <div className="flex items-start gap-3">
+                                  <Avatar initials={option.agent.avatar} size="xs" />
+                                  <div className="flex-1">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <span className="text-sm font-semibold text-neutral-900">
+                                        {option.agent.name}
+                                      </span>
+                                      {isSelected && (
+                                        <div className="flex items-center gap-1 text-success-600 text-xs font-medium">
+                                          <CheckCircle className="w-3 h-3" />
+                                          Approved
+                                        </div>
+                                      )}
+                                    </div>
+                                    <p className="text-sm text-neutral-600 mb-2">{option.description}</p>
+                                    <div className="flex items-center justify-between">
+                                      <Badge variant="outline" className="text-xs bg-white">
+                                        Outcome: {option.outcome}
+                                      </Badge>
+                                      {!isResolved && (
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleResolveConflict(thread.id, option.label)}
+                                        >
+                                          {option.label}
+                                        </Button>
+                                      )}
+                                      {isSelected && (
+                                        <span className="text-xs text-success-600 font-medium">
+                                          Action taken
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Recovery Actions for Error Status */}
                     {thread.status === 'error' && (
                       <div className="flex items-center gap-2 mt-3 p-3 bg-red-50 rounded-lg border border-red-200">

@@ -1,4 +1,22 @@
-import { Thread, Metric } from './mockData';
+import { Thread, Metric, Agent } from './mockData';
+
+// Mock agents for social growth
+const socialAgents: Agent[] = [
+  {
+    id: 'agent-social-1',
+    name: 'Copy_Viper',
+    role: 'Viral Content Specialist',
+    avatar: 'CV',
+    metrics: { accuracy: 88, latency: 150 },
+  },
+  {
+    id: 'agent-social-2',
+    name: 'Brand_Guard',
+    role: 'Brand Safety Officer',
+    avatar: 'BG',
+    metrics: { accuracy: 99, latency: 100 },
+  },
+];
 
 export const socialMetrics: Metric[] = [
   {
@@ -38,6 +56,24 @@ export const socialThreads: Thread[] = [
     status: 'active',
     objective: 'Analyze emerging trends and identify viral content opportunities',
     events: [],
+    conflict: {
+      id: 'conflict-social-1',
+      reason: 'Brand Voice Violation: Proposed hook is clickbait',
+      options: [
+        {
+          agent: socialAgents[0],
+          description: 'Use aggressive hook: "You won\'t believe this..."',
+          outcome: 'Max Viral Potential',
+          label: 'Approve Viral',
+        },
+        {
+          agent: socialAgents[1],
+          description: 'Use safe hook: "Discover the latest trends..."',
+          outcome: 'Brand Safe',
+          label: 'Approve Safe',
+        }
+      ]
+    }
   },
   {
     id: 'social-thread-2',
