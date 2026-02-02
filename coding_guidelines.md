@@ -4,6 +4,7 @@
 ```
 app/
   layout.tsx (Root)
+  page.tsx (Root Landing Page)
   workspaces/
     [workspaceId]/
       layout.tsx (Shell - LeftNav, TopBar, RightRail)
@@ -26,7 +27,7 @@ app/
       settings/
         page.tsx
 components/
-  ui/ (Primitives: Button, Card, Badge, Avatar, ProgressBar, Tag, MetricStat, Accordion, SegmentedControl)
+  ui/ (Primitives: Button, Card, Badge, Avatar, ProgressBar, Tag, MetricStat, Accordion, SegmentedControl, Modal)
   layout/ (Shell parts: Sidebar, Topbar)
   domains/ (Feature specific: AgentScorecard, ConflictPanel, Timeline)
   providers/
@@ -71,3 +72,4 @@ next: latest, react: latest, react-dom: latest, typescript: latest, tailwindcss:
 - tailwind.config.ts (Imports `theme` from `lib/theme.ts` for colors, fonts, animation definitions)
 - tsconfig. (path aliases, strict mode)
 - .eslintrc. (airbnb or standard next rules)
+

@@ -11,6 +11,8 @@
 - [x] Interactive Components (conflict resolution panels, accordions)
 - [x] Send Command Simulation (appending events to timeline)
 - [x] Agent Scorecards (detailed diagnostics in right sidebar)
+- [x] Root Landing Page (workspace listing)
+- [x] Modal UI Primitive (overlay/dialog component)
 
 ## User Stories
 As a user, I want to view a Mission Control dashboard to see the overall health of the system. As a user, I want to navigate to specific modules like 'SEO_Cluster', 'Content_Factory', 'Social_Growth', and 'SaaS_Launch_Ops' to view detailed threads. As a user, I want to resolve conflicts between agents (e.g., Tech_Lead vs Crawl_Spider) by selecting an option in the Thread Detail view. As a user, I want to view agent scorecards and diagnostics in the right sidebar. As a user, I want to send commands to threads and see them appear in the timeline. As a user, I want to toggle between 'Logic', 'Debug Log', and standard views. As a user, I want to manage workspace settings such as integrations and guardrails.
@@ -19,7 +21,7 @@ As a user, I want to view a Mission Control dashboard to see the overall health 
 All routes specified in the prompt resolve correctly. The UI matches the visual fidelity of the references (fonts, colors, card styles). Left sidebar and top bar are persistent. Right sidebar is context-aware. Action buttons (Approve, Retry) update the local state/UI immediately. Accordions expand and collapse smoothly. Data is mocked in a centralized `/data` directory. No real backend calls are made. The application is responsive.
 
 ## Implementation Steps
-- **Phase 1: UI Architecture** - **Complete**. Set up Next.js project, define route structure in `app/` directory, and implement the persistent workspace shell (left nav, top bar, main content, right rail).
+- **Phase 1: UI Architecture** - **Complete**. Set up Next.js project, define route structure in `app/` directory, implement the persistent workspace shell (left nav, top bar, main content, right rail), and create the Root Landing Page.
 - **Phase 2: Design System** - **Complete**. Define design tokens (colors, typography, spacing) and build core UI primitives (Buttons, Cards, Accordions, Modals, Status Chips).
 - **Phase 3: Domain Implementation** - **Complete**.
     - [x] Build specific pages for Mission Control.

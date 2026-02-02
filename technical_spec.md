@@ -4,7 +4,7 @@
 Layout Shells (Server Components for layout, Client Components for interactivity), Atomic Design methodology (Atoms, Molecules, Organisms), Provider Pattern (for global UI state/theme), Composition Pattern (for complex cards), Component Variants (using CVA or Tailwind variants).
 
 ## Component Hierarchy
-AppLayout -> WorkspaceShell -> (LeftNav, TopBar, MainContent, RightRail). Page Components -> DomainSpecificSections (e.g., AgentTimeline, ConflictPanel). UI Primitives -> Button, Card, Badge, Avatar, Accordion, Modal, MetricStat, Tag, ProgressBar.
+AppLayout -> WorkspaceShell -> (LeftNav, TopBar, MainContent, RightRail). Page Components -> DomainSpecificSections (e.g., AgentTimeline, ConflictPanel). UI Primitives -> Button, Card, Badge, Avatar, ProgressBar, Tag, MetricStat, Accordion, Modal.
 
 ## Data Models
 
@@ -81,3 +81,4 @@ N/A (UI Only). Mock functions in `/lib/apiMock.ts` will simulate async data fetc
 - **Tokens**: Defined in `lib/theme.ts` and imported into `tailwind.config.ts`.
 - **Variants**: Components use `class-variance-authority` (CVA) for consistent styling (e.g., `buttonVariants`, `badgeVariants`).
 - **Color Naming**: Standardized to semantic names (primary, neutral, success, warning, danger) aligned with `lib/theme.ts`.
+
