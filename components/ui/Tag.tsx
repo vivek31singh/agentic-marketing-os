@@ -1,40 +1,66 @@
-import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "@/lib/utils";
+import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+import { X } from 'lucide-react';
+
+// Define the variant type explicitly
+export type TagVariant = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'outline';
 
 const tagVariants = cva(
-  "inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
   {
     variants: {
       variant: {
         default:
-          "bg-primary/10 text-primary hover:bg-primary/20",
-        secondary:
-          "bg-secondary/10 text-secondary-foreground hover:bg-secondary/20",
+          'bg-gray-100 text-gray-700 hover:bg-gray-200',
+        primary:
+          'bg-blue-100 text-blue-700 hover:bg-blue-200',
         success:
-          "bg-success/10 text-success hover:bg-success/20",
+          'bg-green-100 text-green-700 hover:bg-green-200',
         warning:
-          "bg-warning/10 text-warning hover:bg-warning/20",
-        danger:
-          "bg-danger/10 text-danger hover:bg-danger/20",
-        neutral:
-          "bg-neutral-100 text-neutral-700 hover:bg-neutral-200",
+          'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
+        error:
+          'bg-red-100 text-red-700 hover:bg-red-200',
         outline:
-          "border border-neutral-300 text-foreground bg-transparent hover:bg-neutral-50 hover:border-neutral-400",
+          'bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50',
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: 'default',
     },
   }
 );
 
 export interface TagProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof tagVariants> {}
-
-function Tag({ className, variant, ...props }: TagProps) {
-  return <div className={cn(tagVariants({ variant }), className)} {...props} />;
+  extends React.HTMLAttributes<HTMLSpanElement>,
+    VariantProps<typeof tagVariants> {
+  onRemove?: () => void;
+  removable?: boolean;
 }
+
+const Tag = React.forwardRef<HTMLSpanElement, TagProps>(
+  ({ className, variant = 'default', removable = false, onRemove, children, ...props }, ref) => {
+    return (
+      <span
+        ref={ref}
+        className={cn(tagVariants({ variant }), className)}
+        {...props}
+      >
+        {children}
+        {removable && (
+          <button
+            type="button"
+            onClick={onRemove}
+            className="ml-1 hover:opacity-70 transition-opacity"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        )}
+      </span>
+    );
+  }
+);
+
+Tag.displayName = 'Tag';
 
 export { Tag, tagVariants };

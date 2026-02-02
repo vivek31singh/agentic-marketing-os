@@ -1,66 +1,56 @@
-import { Thread } from '@/data/mockData';
+import { Thread, Metric } from './mockData';
 
-export interface SocialMetric {
-  label: string;
-  value: string | number;
-  trend: number;
-  icon: string;
-}
-
-export const socialGrowthMetrics: SocialMetric[] = [
+export const socialMetrics: Metric[] = [
   {
+    id: 'social-metric-1',
     label: 'Viral Potential',
-    value: 87,
-    trend: 12.5,
-    icon: 'flame'
+    value: 78,
+    trend: '+12%',
+    status: 'success',
   },
   {
+    id: 'social-metric-2',
     label: 'Trend Alerts',
-    value: 24,
-    trend: -5.2,
-    icon: 'bell'
+    value: 5,
+    trend: '+2',
+    status: 'warning',
   },
   {
+    id: 'social-metric-3',
     label: 'Engagement Rate',
-    value: '4.8%',
-    trend: 8.1,
-    icon: 'heart'
+    value: 4.8,
+    trend: '+0.6%',
+    status: 'success',
   },
   {
-    label: 'Influencer Reach',
-    value: '1.2M',
-    trend: 22.3,
-    icon: 'users'
-  }
+    id: 'social-metric-4',
+    label: 'Pending Outreach',
+    value: 23,
+    trend: '-5',
+    status: 'success',
+  },
 ];
 
 export const socialThreads: Thread[] = [
   {
-    id: 'trend-analysis',
-    title: 'Trend Analysis',
+    id: 'social-thread-1',
+    title: 'Viral Trend Analysis',
     status: 'active',
-    objective: 'Monitor emerging trends in the tech industry and identify viral content opportunities',
+    objective: 'Analyze emerging trends and identify viral content opportunities',
     events: [],
   },
   {
-    id: 'influencer-outreach',
-    title: 'Influencer Outreach',
-    status: 'review',
-    objective: 'Coordinate outreach campaigns with identified key influencers and track engagement',
+    id: 'social-thread-2',
+    title: 'Influencer Outreach Campaign',
+    status: 'active',
+    objective: 'Identify and reach out to relevant influencers for collaboration',
     events: [],
   },
   {
-    id: 'viral-campaign',
-    title: 'Viral Campaign Launch',
+    id: 'social-thread-3',
+    title: 'Social Sentiment Monitor',
     status: 'pending',
-    objective: 'Prepare and launch viral marketing campaign targeting Gen Z audience',
+    objective: 'Monitor brand sentiment across social platforms',
     events: [],
   },
-  {
-    id: 'social-audit',
-    title: 'Social Platform Audit',
-    status: 'active',
-    objective: 'Analyze performance across LinkedIn, Twitter/X, and Instagram channels',
-    events: [],
-  }
 ];

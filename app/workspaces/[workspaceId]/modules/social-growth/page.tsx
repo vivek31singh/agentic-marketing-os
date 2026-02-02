@@ -1,298 +1,187 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
+import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { MetricStat } from '@/components/ui/MetricStat';
-import { Tag } from '@/components/ui/Tag';
-import { ProgressBar } from '@/components/ui/ProgressBar';
-import { Avatar } from '@/components/ui/Avatar';
-import { CheckCircle2, AlertCircle, TrendingUp, Users, Zap, RefreshCw, Wand2, XCircle } from 'lucide-react';
-import { socialGrowthThreads, socialGrowthMetrics } from '@/data/socialGrowth';
+import { socialThreads, socialMetrics } from '@/data/socialGrowth';
+import { ChevronRight, TrendingUp, Users, MessageSquare, Share2 } from 'lucide-react';
 
-interface Conflict {
-  id: string;
-  reason: string;
-  options: Array<{
-    id: string;
-    agent: string;
-    description: string;
-    label: string;
-  }>;
+interface ConflictState {
+  threadId: string;
+  selectedOption: string | null;
+  isResolved: boolean;
 }
 
-interface ThreadCardProps {
-  thread: typeof socialGrowthThreads[0];
+interface RecoveryState {
+  threadId: string;
+  action: 'retry' | 'autofix' | 'ignore' | null;
+  status: 'idle' | 'loading' | 'success';
 }
 
-function ThreadCard({ thread }: ThreadCardProps) {
-  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
-  const [isApproving, setIsApproving] = useState(false);
-  const [approvedOptionId, setApprovedOptionId] = useState<string | null>(null);
+export default function SocialGrowthPage({ params }: { params: { workspaceId: string } }) {
+  const [conflictStates, setConflictStates] = useState<Record<string, ConflictState>>({});
+  const [recoveryStates, setRecoveryStates] = useState<Record<string, RecoveryState>>({});
 
-  const [retryLoading, setRetryLoading] = useState(false);
-  const [autoFixLoading, setAutoFixLoading] = useState(false);
-  const [ignoreLoading, setIgnoreLoading] = useState(false);
-  const [actionFeedback, setActionFeedback] = useState<{ type: 'retry' | 'autofix' | 'ignore' | null; message: string }>({ type: null, message: '' });
-
-  const handleApprove = (optionId: string) => {
-    setSelectedOptionId(optionId);
-    setIsApproving(true);
-    setActionFeedback({ type: null, message: '' });
-
-    setTimeout(() => {
-      setApprovedOptionId(optionId);
-      setIsApproving(false);
-    }, 1000);
+  const handleResolveConflict = (threadId: string, optionLabel: string) => {
+    setConflictStates((prev: Record<string, ConflictState>) => ({
+      ...prev,
+      [threadId]: { threadId, selectedOption: optionLabel, isResolved: true },
+    }));
   };
 
-  const handleRetry = () => {
-    setRetryLoading(true);
-    setActionFeedback({ type: null, message: '' });
+  const handleRecoveryAction = (threadId: string, action: 'retry' | 'autofix' | 'ignore') => {
+    setRecoveryStates((prev: Record<string, RecoveryState>) => ({
+      ...prev,
+      [threadId]: { threadId, action, status: 'loading' },
+    }));
+
+    // Simulate async action
     setTimeout(() => {
-      setRetryLoading(false);
-      setActionFeedback({ type: 'retry', message: 'Retry initiated' });
-    }, 800);
+      setRecoveryStates((prev: Record<string, RecoveryState>) => ({
+        ...prev,
+        [threadId]: { threadId, action, status: 'success' },
+      }));
+    }, 1500);
   };
 
-  const handleAutoFix = () => {
-    setAutoFixLoading(true);
-    setActionFeedback({ type: null, message: '' });
-    setTimeout(() => {
-      setAutoFixLoading(false);
-      setActionFeedback({ type: 'autofix', message: 'Auto-fix applied successfully' });
-    }, 1200);
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <TrendingUp className="w-4 h-4 text-green-500" />;
+      case 'pending':
+        return <MessageSquare className="w-4 h-4 text-yellow-500" />;
+      case 'error':
+        return <AlertTriangle className="w-4 h-4 text-red-500" />;
+      default:
+        return <Users className="w-4 h-4 text-gray-500" />;
+    }
   };
 
-  const handleIgnore = () => {
-    setIgnoreLoading(true);
-    setActionFeedback({ type: null, message: '' });
-    setTimeout(() => {
-      setIgnoreLoading(false);
-      setActionFeedback({ type: 'ignore', message: 'Issue marked as ignored' });
-    }, 600);
+  const getStatusBadgeVariant = (status: string): "default" | "primary" | "success" | "warning" | "error" | "outline" | "ghost" => {
+    switch (status) {
+      case 'active':
+        return 'success';
+      case 'pending':
+        return 'warning';
+      case 'error':
+        return 'error';
+      default:
+        return 'default';
+    }
+  };
+
+  const getMetricIcon = (label: string) => {
+    switch (label) {
+      case 'Viral Potential':
+        return <TrendingUp className="w-5 h-5 text-green-500" />;
+      case 'Trend Alerts':
+        return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
+      case 'Engagement Rate':
+        return <MessageSquare className="w-5 h-5 text-blue-500" />;
+      case 'Pending Outreach':
+        return <Users className="w-5 h-5 text-purple-500" />;
+      default:
+        return <Share2 className="w-5 h-5 text-gray-500" />;
+    }
   };
 
   return (
-    <Card className="p-6">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${thread.status === 'active' ? 'bg-primary-100 text-primary-600' : 'bg-neutral-100 text-neutral-600'}`}>
-            {thread.status === 'active' ? <TrendingUp className="w-5 h-5" /> : <Zap className="w-5 h-5" />}
-          </div>
-          <div>
-            <h3 className="font-semibold text-neutral-900">{thread.title}</h3>
-            <p className="text-sm text-neutral-500">{thread.objective}</p>
-          </div>
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Social Growth</h1>
+          <p className="text-gray-600 mt-1">Track and amplify your social media presence</p>
         </div>
-        <Badge variant={thread.status === 'active' ? 'success' : 'neutral'}>
-          {thread.status}
-        </Badge>
+        <Button variant="primary">Create Campaign</Button>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-4">
-        {thread.tags.map((tag) => (
-          <Tag key={tag} variant="outline">
-            {tag}
-          </Tag>
+      {/* Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {socialMetrics.map((metric) => (
+          <MetricStat key={metric.id} metric={metric} />
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="flex items-center gap-2 text-sm text-neutral-600">
-          <Users className="w-4 h-4" />
-          <span>{thread.engagementRate} engagement rate</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-neutral-600">
-          <Zap className="w-4 h-4" />
-          <span>{thread.viralPotential} viral potential</span>
-        </div>
-      </div>
+      {/* Threads List */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-gray-900">Active Campaigns</h2>
+        <div className="grid gap-4">
+          {socialThreads.map((thread) => {
+            const conflictState = conflictStates[thread.id];
+            const recoveryState = recoveryStates[thread.id];
 
-      {thread.conflict && (
-        <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-          <div className="flex items-center gap-2 text-amber-800 mb-3">
-            <AlertCircle className="w-5 h-5" />
-            <span className="font-medium">Conflict Resolution Required</span>
-          </div>
-          <p className="text-sm text-amber-700 mb-3">{thread.conflict.reason}</p>
-          
-          {!approvedOptionId ? (
-            <div className="space-y-2">
-              {thread.conflict.options.map((option) => (
-                <div
-                  key={option.id}
-                  className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                    selectedOptionId === option.id
-                      ? 'border-primary-500 bg-primary-50 ring-2 ring-primary-200'
-                      : 'border-amber-200 bg-white hover:bg-amber-50'
-                  }`}
-                  onClick={() => !isApproving && handleApprove(option.id)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className="text-xs">{option.agent}</Badge>
-                        <span className="font-medium text-sm text-neutral-900">{option.label}</span>
-                      </div>
-                      <p className="text-sm text-neutral-600">{option.description}</p>
-                    </div>
-                    {selectedOptionId === option.id && !approvedOptionId && (
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleApprove(option.id);
-                        }}
-                        disabled={isApproving}
+            return (
+              <Card key={thread.id} className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      {getStatusIcon(thread.status)}
+                      <Link
+                        href={`/workspaces/${params.workspaceId}/modules/social-growth/${thread.id}`}
+                        className="text-lg font-medium text-gray-900 hover:text-blue-600"
                       >
-                        {isApproving ? 'Approving...' : 'Approve'}
-                      </Button>
+                        {thread.title}
+                      </Link>
+                      <Badge variant={getStatusBadgeVariant(thread.status)}>{thread.status}</Badge>
+                    </div>
+                    <p className="text-gray-600 mb-3">{thread.objective}</p>
+                    
+                    {/* Recovery Actions for Error Status */}
+                    {thread.status === 'error' && (
+                      <div className="flex items-center gap-2 mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                        <AlertTriangle className="w-5 h-5 text-red-500" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-red-800">Action Required</p>
+                          {recoveryState?.status === 'success' ? (
+                            <p className="text-sm text-green-600">
+                              {recoveryState.action === 'retry' && 'Retry successful - issue resolved'}
+                              {recoveryState.action === 'autofix' && 'Auto-fix applied successfully'}
+                              {recoveryState.action === 'ignore' && 'Issue ignored - monitoring'}
+                            </p>
+                          ) : recoveryState?.status === 'loading' ? (
+                            <p className="text-sm text-gray-600">Processing...</p>
+                          ) : (
+                            <div className="flex gap-2 mt-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRecoveryAction(thread.id, 'retry')}
+                              >
+                                Retry
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRecoveryAction(thread.id, 'autofix')}
+                              >
+                                Auto-Fix
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRecoveryAction(thread.id, 'ignore')}
+                              >
+                                Ignore
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     )}
                   </div>
+                  <Link
+                    href={`/workspaces/${params.workspaceId}/modules/social-growth/${thread.id}`}
+                  >
+                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                  </Link>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-green-700 bg-green-100 p-3 rounded-lg">
-              <CheckCircle2 className="w-5 h-5" />
-              <span className="font-medium">Option approved successfully</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {thread.hasError && (
-        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <div className="flex items-center gap-2 text-red-800 mb-3">
-            <AlertCircle className="w-5 h-5" />
-            <span className="font-medium">Recovery Action Required</span>
-          </div>
-          <p className="text-sm text-red-700 mb-3">
-            Failed to fetch trend data from Twitter API. Rate limit exceeded.
-          </p>
-          
-          {actionFeedback.type && (
-            <div className={`mb-3 p-2 rounded text-sm ${
-              actionFeedback.type === 'ignore' 
-                ? 'bg-neutral-100 text-neutral-700' 
-                : 'bg-green-100 text-green-700'
-            }`}>
-              {actionFeedback.message}
-            </div>
-          )}
-
-          <div className="flex flex-wrap gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleRetry}
-              disabled={retryLoading || autoFixLoading || ignoreLoading}
-            >
-              {retryLoading ? (
-                <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Retrying...</>
-              ) : (
-                <><RefreshCw className="w-4 h-4 mr-2" /> Retry</>
-              )}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleAutoFix}
-              disabled={retryLoading || autoFixLoading || ignoreLoading}
-            >
-              {autoFixLoading ? (
-                <><Wand2 className="w-4 h-4 mr-2 animate-pulse" /> Fixing...</>
-              ) : (
-                <><Wand2 className="w-4 h-4 mr-2" /> Auto-Fix</>
-              )}
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleIgnore}
-              disabled={retryLoading || autoFixLoading || ignoreLoading}
-            >
-              {ignoreLoading ? (
-                'Ignoring...'
-              ) : (
-                <><XCircle className="w-4 h-4 mr-2" /> Ignore</>
-              )}
-            </Button>
-          </div>
-        </div>
-      )}
-
-      <div className="mt-4 flex items-center justify-between">
-        <ProgressBar value={thread.progress} className="flex-1 mr-4" />
-        <span className="text-sm font-medium text-neutral-700">{thread.progress}%</span>
-      </div>
-
-      <div className="mt-4 pt-4 border-t border-neutral-200">
-        <div className="flex items-center justify-between">
-          <div className="flex -space-x-2">
-            {thread.agents.map((agent) => (
-              <Avatar
-                key={agent.id}
-                src={agent.avatar}
-                alt={agent.name}
-                size="sm"
-                className="border-2 border-white"
-              />
-            ))}
-          </div>
-          <Button size="sm" variant="outline">
-            View Thread
-          </Button>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-export default function SocialGrowthPage() {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-900">Social Growth</h1>
-          <p className="text-neutral-600">Manage viral content strategy and influencer campaigns</p>
-        </div>
-        <Badge variant="success" withDot>Module Active</Badge>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <MetricStat
-          label="Viral Potential"
-          value={socialGrowthMetrics.viralPotential}
-          trend="+12%"
-          trendUp={true}
-          icon={<Zap className="w-5 h-5" />}
-        />
-        <MetricStat
-          label="Trend Alerts"
-          value={socialGrowthMetrics.trendAlerts}
-          trend="+3 new"
-          trendUp={true}
-          icon={<TrendingUp className="w-5 h-5" />}
-        />
-        <MetricStat
-          label="Engagement Rate"
-          value={`${socialGrowthMetrics.engagementRate}%`}
-          trend="+5%"
-          trendUp={true}
-          icon={<Users className="w-5 h-5" />}
-        />
-      </div>
-
-      <div>
-        <h2 className="text-lg font-semibold text-neutral-900 mb-4">Active Threads</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {socialGrowthThreads.map((thread) => (
-            <ThreadCard key={thread.id} thread={thread} />
-          ))}
+              </Card>
+            );
+          })}
         </div>
       </div>
     </div>

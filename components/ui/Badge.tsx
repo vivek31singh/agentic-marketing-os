@@ -1,24 +1,33 @@
-import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "@/lib/utils";
+import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+
+// Define the variant type explicitly
+export type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'outline' | 'ghost';
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
   {
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive:
-          "border-transparent bg-danger text-danger-foreground shadow hover:bg-danger/80",
-        outline: "text-foreground border-neutral-200 bg-transparent hover:bg-neutral-100 hover:text-neutral-900",
-        ghost: "text-foreground border-transparent bg-transparent hover:bg-neutral-100 hover:text-neutral-900",
+          'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500',
+        primary:
+          'bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-blue-500',
+        success:
+          'bg-green-100 text-green-700 hover:bg-green-200 focus:ring-green-500',
+        warning:
+          'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 focus:ring-yellow-500',
+        error:
+          'bg-red-100 text-red-700 hover:bg-red-200 focus:ring-red-500',
+        outline:
+          'bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500',
+        ghost:
+          'bg-transparent text-gray-600 hover:bg-gray-100 focus:ring-gray-500',
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: 'default',
     },
   }
 );
@@ -27,32 +36,41 @@ export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {
   withDot?: boolean;
-  dotColor?: "primary" | "secondary" | "success" | "warning" | "danger" | "neutral";
 }
 
-const dotColorMap: Record<BadgeProps["dotColor"], string> = {
-  primary: "bg-primary",
-  secondary: "bg-secondary",
-  success: "bg-success",
-  warning: "bg-warning",
-  danger: "bg-danger",
-  neutral: "bg-neutral-400",
+// Fixed dotColorMap to include all variant types
+const dotColorMap: Record<BadgeVariant, string> = {
+  default: 'bg-gray-500',
+  primary: 'bg-blue-500',
+  success: 'bg-green-500',
+  warning: 'bg-yellow-500',
+  error: 'bg-red-500',
+  outline: 'bg-gray-400',
+  ghost: 'bg-gray-400',
 };
 
-function Badge({ className, variant, withDot, dotColor = "primary", ...props }: BadgeProps) {
-  return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props}>
-      {withDot && (
-        <span
-          className={cn(
-            "mr-1.5 h-1.5 w-1.5 rounded-full",
-            dotColorMap[dotColor] || dotColorMap.primary
-          )}
-        />
-      )}
-      {props.children}
-    </div>
-  );
-}
+const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
+  ({ className, variant = 'default', withDot = false, children, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(badgeVariants({ variant }), className)}
+        {...props}
+      >
+        {withDot && (
+          <span
+            className={cn(
+              'w-1.5 h-1.5 rounded-full',
+              dotColorMap[variant as BadgeVariant] || dotColorMap.default
+            )}
+          />
+        )}
+        {children}
+      </div>
+    );
+  }
+);
+
+Badge.displayName = 'Badge';
 
 export { Badge, badgeVariants };
