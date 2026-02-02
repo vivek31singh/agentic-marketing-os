@@ -1,3 +1,6 @@
+'use client';
+
+import { useParams } from 'next/navigation';
 import { 
   Activity, 
   TrendingUp, 
@@ -7,315 +10,208 @@ import {
   CheckCircle,
   Clock,
   ArrowUpRight,
-  Zap
+  Zap,
+  Cpu,
+  Layers,
+  Rocket
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/Card';
 import { MetricStat } from '@/components/ui/MetricStat';
 import { Badge } from '@/components/ui/Badge';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Button } from '@/components/ui/Button';
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/Accordion';
-import { Avatar } from '@/components/ui/Avatar';
-import { Tag } from '@/components/ui/Tag';
+import { mockData } from '@/data/mockData';
 
-// Mock data for Mission Control dashboard
-const metrics = [
-  { 
-    label: 'Total Threads', 
-    value: '247', 
-    change: 12, 
-    icon: Activity, 
-    iconColor: 'text-primary-500' 
-  },
-  { 
-    label: 'Active Agents', 
-    value: '18', 
-    change: 3, 
-    icon: Users, 
-    iconColor: 'text-success-500' 
-  },
-  { 
-    label: 'Tasks Completed', 
-    value: '1,842', 
-    change: 24, 
-    icon: CheckCircle, 
-    iconColor: 'text-info-500' 
-  },
-  { 
-    label: 'Avg Response Time', 
-    value: '2.3s', 
-    change: -15, 
-    icon: Clock, 
-    iconColor: 'text-warning-500' 
-  },
-];
+export default function MissionControlDashboard() {
+  const params = useParams();
+  const workspaceId = params.workspaceId as string;
+  
+  // Get workspace data from mock
+  const workspace = mockData.workspaces.find(w => w.id === workspaceId);
+  
+  if (!workspace) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Card className="p-8">
+          <p className="text-neutral-600">Workspace not found</p>
+        </Card>
+      </div>
+    );
+  }
 
-const recentThreads = [
-  {
-    id: 1,
-    title: 'SEO Keyword Research - Q1 Campaign',
-    module: 'SEO Cluster',
-    status: 'active',
-    priority: 'high',
-    progress: 75,
-    agents: ['SL', 'CW'],
-    lastActivity: '2 min ago',
-  },
-  {
-    id: 2,
-    title: 'Blog Post: 10 Growth Hacking Strategies',
-    module: 'Content Factory',
-    status: 'review',
-    priority: 'medium',
-    progress: 90,
-    agents: ['CW'],
-    lastActivity: '15 min ago',
-  },
-  {
-    id: 3,
-    title: 'Social Media Calendar - February',
-    module: 'Social Growth',
-    status: 'pending',
-    priority: 'low',
-    progress: 30,
-    agents: ['SM', 'CW'],
-    lastActivity: '1 hour ago',
-  },
-  {
-    id: 4,
-    title: 'Landing Page Optimization',
-    module: 'SEO Cluster',
-    status: 'active',
-    priority: 'high',
-    progress: 45,
-    agents: ['SL', 'SM'],
-    lastActivity: '3 hours ago',
-  },
-];
+  // Calculate metrics
+  const totalActiveThreads = workspace.modules.reduce((sum, mod) => sum + (mod.activeThreadsCount || 0), 0);
+  const totalModules = workspace.modules.length;
+  const activeModules = workspace.modules.filter(m => m.active).length;
 
-const activeWorkflows = [
-  {
-    id: 1,
-    name: 'Content Production Pipeline',
-    status: 'running',
-    tasks: { completed: 23, total: 28 },
-    eta: '45 min',
-  },
-  {
-    id: 2,
-    name: 'SEO Audit & Analysis',
-    status: 'running',
-    tasks: { completed: 156, total: 200 },
-    eta: '2.3 hrs',
-  },
-  {
-    id: 3,
-    name: 'Social Post Scheduling',
-    status: 'queued',
-    tasks: { completed: 0, total: 45 },
-    eta: 'Pending',
-  },
-];
-
-const systemAlerts = [
-  {
-    id: 1,
-    type: 'error',
-    title: 'Agent Timeout',
-    message: 'Content_Writer failed to respond within timeout threshold',
-    time: '5 min ago',
-  },
-  {
-    id: 2,
-    type: 'warning',
-    title: 'High Resource Usage',
-    message: 'Memory usage at 85% capacity',
-    time: '12 min ago',
-  },
-  {
-    id: 3,
-    type: 'info',
-    title: 'Workflow Completed',
-    message: 'Keyword research pipeline finished successfully',
-    time: '1 hour ago',
-  },
-];
-
-export default function MissionControlPage() {
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-900">Mission Control</h1>
-        <p className="text-neutral-500 mt-1">Overview of workspace performance and active operations</p>
+    <div className="space-y-6 p-6">
+      {/* Header Section */}
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-2xl font-bold text-neutral-900">{workspace.name}</h1>
+            <Badge variant={workspace.status === 'active' ? 'success' : 'warning'}>
+              {workspace.status}
+            </Badge>
+          </div>
+          <p className="text-neutral-600">Mission Control Dashboard - System Overview</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm">
+            <Activity className="w-4 h-4 mr-2" />
+            View Logs
+          </Button>
+          <Button variant="primary" size="sm">
+            <Zap className="w-4 h-4 mr-2" />
+            Quick Actions
+          </Button>
+        </div>
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {metrics.map((metric) => (
-          <MetricStat key={metric.label} {...metric} />
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Active Threads Card */}
+        <Card variant="default">
+          <CardContent className="p-4">
+            <MetricStat
+              label="Active Threads"
+              value={totalActiveThreads}
+              trend={{ value: 12, direction: 'up' }}
+              icon={<Activity className="w-5 h-5 text-primary-500" />}
+              size="default"
+            />
+            <ProgressBar value={75} className="mt-3" />
+            <p className="text-xs text-neutral-500 mt-2">75% of capacity utilized</p>
+          </CardContent>
+        </Card>
+
+        {/* System Health Card */}
+        <Card variant="default">
+          <CardContent className="p-4">
+            <MetricStat
+              label="System Health"
+              value={`${workspace.health}%`}
+              trend={{ value: 3, direction: 'up' }}
+              icon={<CheckCircle className="w-5 h-5 text-success-500" />}
+              size="default"
+            />
+            <ProgressBar value={workspace.health} className="mt-3" variant="success" />
+            <p className="text-xs text-neutral-500 mt-2">All systems operational</p>
+          </CardContent>
+        </Card>
+
+        {/* Active Agents Card */}
+        <Card variant="default">
+          <CardContent className="p-4">
+            <MetricStat
+              label="Active Agents"
+              value={8}
+              trend={{ value: 2, direction: 'up' }}
+              icon={<Cpu className="w-5 h-5 text-primary-500" />}
+              size="default"
+            />
+            <ProgressBar value={80} className="mt-3" />
+            <p className="text-xs text-neutral-500 mt-2">8 of 10 agents active</p>
+          </CardContent>
+        </Card>
+
+        {/* Modules Card */}
+        <Card variant="default">
+          <CardContent className="p-4">
+            <MetricStat
+              label="Active Modules"
+              value={`${activeModules}/${totalModules}`}
+              trend={{ value: 0, direction: 'neutral' }}
+              icon={<Layers className="w-5 h-5 text-info-500" />}
+              size="default"
+            />
+            <ProgressBar value={(activeModules / totalModules) * 100} className="mt-3" variant="info" />
+            <p className="text-xs text-neutral-500 mt-2">{activeModules} modules currently active</p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Threads - Takes 2 columns */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-neutral-900">Recent Threads</h2>
-            <Button variant="outline" size="sm">
-              View All
-              <ArrowUpRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="space-y-3">
-            {recentThreads.map((thread) => (
-              <Card key={thread.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-medium text-neutral-900 truncate">{thread.title}</h3>
-                        <Badge
-                          variant={thread.priority === 'high' ? 'error' : thread.priority === 'medium' ? 'warning' : 'info'}
-                          size="sm"
-                        >
-                          {thread.priority}
-                        </Badge>
-                        <Badge
-                          variant={thread.status === 'active' ? 'success' : thread.status === 'review' ? 'warning' : 'ghost'}
-                          size="sm"
-                        >
-                          {thread.status}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-neutral-500">
-                        <span>{thread.module}</span>
-                        <span>•</span>
-                        <span>{thread.lastActivity}</span>
-                      </div>
-                      <div className="mt-3">
-                        <ProgressBar 
-                          value={thread.progress} 
-                          size="sm" 
-                          variant="primary"
-                          showLabel={false}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex -space-x-2">
-                      {thread.agents.map((agent) => (
-                        <Avatar 
-                          key={agent} 
-                          initials={agent} 
-                          size="sm"
-                          className="border-2 border-white"
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      {/* Accessible Modules Section */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-neutral-900">Accessible Modules</h2>
+          <Button variant="ghost" size="sm">
+            View All
+            <ArrowUpRight className="w-4 h-4 ml-1" />
+          </Button>
         </div>
-
-        {/* Right Column - Workflows & Alerts */}
-        <div className="space-y-6">
-          {/* Active Workflows */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Active Workflows</CardTitle>
-              <CardDescription>Running and queued automation</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {activeWorkflows.map((workflow) => (
-                <div key={workflow.id} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {workflow.status === 'running' && (
-                        <Zap className="h-4 w-4 text-primary-500" />
-                      )}
-                      <span className="text-sm font-medium text-neutral-900">{workflow.name}</span>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {workspace.modules.map((module) => (
+            <Card key={module.id} variant="default" className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-primary-50 rounded-lg">
+                      <FileText className="w-5 h-5 text-primary-600" />
                     </div>
-                    <Tag
-                      variant={workflow.status === 'running' ? 'success' : 'ghost'}
-                      size="sm"
-                    >
-                      {workflow.status}
-                    </Tag>
+                    <div>
+                      <CardTitle className="text-base">{module.name.replace('_', ' ')}</CardTitle>
+                      <CardDescription className="text-xs mt-0.5">{module.description}</CardDescription>
+                    </div>
                   </div>
-                  <ProgressBar 
-                    value={workflow.tasks.completed} 
-                    max={workflow.tasks.total} 
-                    size="sm"
-                    showLabel={true}
-                  />
-                  <div className="flex items-center justify-between text-xs text-neutral-500">
-                    <span>{workflow.tasks.completed}/{workflow.tasks.total} tasks</span>
-                    <span>ETA: {workflow.eta}</span>
+                  <Badge variant={module.active ? 'success' : 'neutral'}>
+                    {module.active ? 'Active' : 'Inactive'}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2 text-sm text-neutral-600">
+                    <Activity className="w-4 h-4" />
+                    <span>{module.activeThreadsCount} active threads</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-neutral-600">
+                    <Clock className="w-4 h-4" />
+                    <span>Last: 2m ago</span>
                   </div>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* System Alerts */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">System Alerts</CardTitle>
-              <CardDescription>Recent notifications and warnings</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Accordion collapsible defaultValue="alert-1">
-                {systemAlerts.map((alert) => (
-                  <AccordionItem key={alert.id} value={`alert-${alert.id}`}>
-                    <AccordionTrigger className="py-3">
-                      <div className="flex items-center gap-2">
-                        {alert.type === 'error' && (
-                          <AlertCircle className="h-4 w-4 text-error-500" />
-                        )}
-                        {alert.type === 'warning' && (
-                          <Activity className="h-4 w-4 text-warning-500" />
-                        )}
-                        {alert.type === 'info' && (
-                          <CheckCircle className="h-4 w-4 text-info-500" />
-                        )}
-                        <span className="text-sm font-medium text-neutral-900">{alert.title}</span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <p className="text-sm text-neutral-600 mb-2">{alert.message}</p>
-                      <span className="text-xs text-neutral-400">{alert.time}</span>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start">
-                <FileText className="mr-2 h-4 w-4" />
-                New Thread
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <Users className="mr-2 h-4 w-4" />
-                Add Agent
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <TrendingUp className="mr-2 h-4 w-4" />
-                Generate Report
-              </Button>
-            </CardContent>
-          </Card>
+                <div className="flex gap-2">
+                  <Button variant="primary" size="sm" className="flex-1">
+                    <Rocket className="w-3 h-3 mr-1" />
+                    Launch
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    Configure
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
+      </div>
+
+      {/* Recent Activity Section */}
+      <div>
+        <h2 className="text-lg font-semibold text-neutral-900 mb-4">Recent Activity</h2>
+        <Card variant="default">
+          <CardContent className="p-4">
+            <div className="space-y-4">
+              {[1, 2, 3].map((item) => (
+                <div key={item} className="flex items-start gap-3 pb-4 border-b border-neutral-100 last:border-0 last:pb-0">
+                  <div className="p-2 bg-success-50 rounded-full">
+                    <CheckCircle className="w-4 h-4 text-success-600" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-neutral-900">
+                      Task completed successfully
+                    </p>
+                    <p className="text-xs text-neutral-500 mt-1">
+                      SEO_Cluster module finished crawl optimization
+                    </p>
+                  </div>
+                  <span className="text-xs text-neutral-400">{item}m ago</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
