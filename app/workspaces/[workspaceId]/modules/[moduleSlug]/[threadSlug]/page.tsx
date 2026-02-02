@@ -1,230 +1,347 @@
-import React from 'react';
-import { Thread } from '@/data/mockData';
-import { getThreadBySlug, sampleThread } from '@/data/threadData';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import { Send, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
-import { ThreadTimeline } from '@/components/domains/ThreadTimeline';
-import { ConflictPanel } from '@/components/domains/ConflictPanel';
-import { MetricStat } from '@/components/ui/MetricStat';
-import { ProgressBar } from '@/components/ui/ProgressBar';
-import { 
-  ArrowLeft, 
-  Clock, 
-  MessageSquare, 
-  Users, 
-  AlertCircle, 
-  Play, 
-  Pause,
-  MoreVertical,
-  Activity
-} from 'lucide-react';
-import Link from 'next/link';
 
-interface PageProps {
-  params: {
-    workspaceId: string;
-    moduleSlug: string;
-    threadSlug: string;
+// Types (matching mockData.ts)
+interface Agent {
+  id: string;
+  name: string;
+  role: string;
+  avatar: string;
+  metrics: {
+    accuracy: number;
+    latency: number;
   };
 }
 
-// This would normally fetch from the API, but we're using mock data
-async function getThread(threadSlug: string): Promise<Thread | null> {
-  // Simulate async fetch
-  await new Promise(resolve => setTimeout(resolve, 100));
-  return getThreadBySlug(threadSlug) || null;
+interface Event {
+  type: 'message' | 'conflict' | 'system';
+  timestamp: string;
+  agent: Agent;
+  content: string;
+  logicChain?: string[];
+  meta?: Record<string, any>;
 }
 
-export default async function ThreadDetailPage({ params }: PageProps) {
+interface Conflict {
+  id: string;
+  reason: string;
+  options: Option[];
+}
+
+interface Option {
+  agent: Agent;
+  description: string;
+  label: string;
+  outcome: string;
+}
+
+interface Thread {
+  id: string;
+  title: string;
+  status: string;
+  objective: string;
+  events: Event[];
+  conflict?: Conflict;
+}
+
+// Mock Thread Data (in real app, this would be fetched)
+const mockThread: Thread = {
+  id: 'thread-1',
+  title: 'Technical Debt Prioritization',
+  status: 'active',
+  objective: 'Identify and prioritize critical technical debt items for Q1 resolution.',
+  events: [
+    {
+      type: 'message',
+      timestamp: '2024-01-15T09:00:00Z',
+      agent: {
+        id: 'agent-1',
+        name: 'Tech_Lead',
+        role: 'Engineering',
+        avatar: '🤖',
+        metrics: { accuracy: 0.95, latency: 120 },
+      },
+      content: 'Analyzing codebase for technical debt indicators...',
+      logicChain: ['Scan codebase', 'Identify patterns', 'Flag potential issues'],
+    },
+    {
+      type: 'message',
+      timestamp: '2024-01-15T09:05:00Z',
+      agent: {
+        id: 'agent-2',
+        name: 'Crawl_Spider',
+        role: 'Analysis',
+        avatar: '🕷️',
+        metrics: { accuracy: 0.88, latency: 200 },
+      },
+      content: 'Found 47 potential debt items. Top priority: Legacy payment integration.',
+    },
+    {
+      type: 'conflict',
+      timestamp: '2024-01-15T09:10:00Z',
+      agent: {
+        id: 'agent-1',
+        name: 'Tech_Lead',
+        role: 'Engineering',
+        avatar: '🤖',
+        metrics: { accuracy: 0.95, latency: 120 },
+      },
+      content: 'Disagreement on priority order.',
+    },
+  ],
+  conflict: {
+    id: 'conflict-1',
+    reason: 'Priority of refactoring efforts',
+    options: [
+      {
+        agent: {
+          id: 'agent-1',
+          name: 'Tech_Lead',
+          role: 'Engineering',
+          avatar: '🤖',
+          metrics: { accuracy: 0.95, latency: 120 },
+        },
+        description: 'Focus on payment integration first',
+        label: 'Payment First',
+        outcome: 'Immediate security improvements',
+      },
+      {
+        agent: {
+          id: 'agent-2',
+          name: 'Crawl_Spider',
+          role: 'Analysis',
+          avatar: '🕷️',
+          metrics: { accuracy: 0.88, latency: 200 },
+        },
+        description: 'Focus on data layer refactoring',
+        label: 'Data First',
+        outcome: 'Better query performance',
+      },
+    ],
+  },
+};
+
+const currentUser: Agent = {
+  id: 'user-1',
+  name: 'You',
+  role: 'User',
+  avatar: '👤',
+  metrics: { accuracy: 1, latency: 0 },
+};
+
+export default function ThreadDetailPage() {
+  const params = useParams();
   const { workspaceId, moduleSlug, threadSlug } = params;
-  const thread = await getThread(threadSlug);
+  
+  const [thread, setThread] = useState<Thread>(mockThread);
+  const [command, setCommand] = useState('');
+  const [isSending, setIsSending] = useState(false);
 
-  if (!thread) {
-    return (
-      <div className="flex items-center justify-center h-full min-h-[400px]">
-        <Card className="p-8 text-center">
-          <AlertCircle className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
-            Thread Not Found
-          </h2>
-          <p className="text-neutral-600 dark:text-neutral-400 mb-4">
-            The thread you're looking for doesn't exist or has been deleted.
-          </p>
-          <Link href={`/workspaces/${workspaceId}/modules/${moduleSlug}`}>
-            <Button>Back to Module</Button>
-          </Link>
-        </Card>
-      </div>
-    );
-  }
+  const formatTimestamp = (timestamp: string) => {
+    return new Date(timestamp).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
 
-  const hasConflict = thread.status === 'awaiting_resolution' || !!thread.conflict;
-  const progress = thread.status === 'completed' ? 100 : 
-                   thread.status === 'in_progress' ? 60 : 
-                   thread.status === 'awaiting_resolution' ? 45 : 0;
+  const handleSendCommand = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!command.trim()) return;
+
+    setIsSending(true);
+
+    // Create new user event
+    const newEvent: Event = {
+      type: 'message',
+      timestamp: new Date().toISOString(),
+      agent: currentUser,
+      content: command,
+    };
+
+    // Simulate network delay
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // Append to events
+    setThread((prev) => ({
+      ...prev,
+      events: [...prev.events, newEvent],
+    }));
+
+    setCommand('');
+    setIsSending(false);
+  };
+
+  const handleResolveConflict = (optionLabel: string) => {
+    // Remove conflict and add resolution event
+    const resolutionEvent: Event = {
+      type: 'system',
+      timestamp: new Date().toISOString(),
+      agent: currentUser,
+      content: `Conflict resolved. Selected option: ${optionLabel}`,
+    };
+
+    setThread((prev) => ({
+      ...prev,
+      events: [...prev.events, resolutionEvent],
+      conflict: undefined,
+    }));
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Header Section */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-4 flex-1">
-          <Link href={`/workspaces/${workspaceId}/modules/${moduleSlug}`}>
-            <Button variant="ghost" size="sm" className="flex-shrink-0">
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-          </Link>
-          
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                {thread.title}
-              </h1>
-              <Badge 
-                variant={thread.status === 'completed' ? 'success' : 
-                        thread.status === 'awaiting_resolution' ? 'warning' : 
-                        'secondary'}
-                className="capitalize"
-              >
-                {thread.status.replace('_', ' ')}
-              </Badge>
-            </div>
-            
-            <p className="text-neutral-600 dark:text-neutral-400 max-w-3xl">
-              {thread.objective}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" size="sm">
-            <Activity className="w-4 h-4 mr-2" />
-            Logs
+    <div className="h-full flex flex-col bg-neutral-50 dark:bg-neutral-950">
+      {/* Header */}
+      <div className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-6 py-4">
+        <div className="flex items-center gap-4 mb-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-neutral-600 dark:text-neutral-400"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
           </Button>
-          <Button variant="secondary" size="sm">
-            <MoreVertical className="w-4 h-4" />
-          </Button>
+          <h1 className="text-xl font-semibold text-neutral-900 dark:text-white">
+            {thread.title}
+          </h1>
+          <Badge variant={thread.status === 'active' ? 'success' : 'neutral'}>
+            {thread.status}
+          </Badge>
         </div>
+        <p className="text-neutral-600 dark:text-neutral-400">
+          {thread.objective}
+        </p>
       </div>
 
-      {/* Thread Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-4">
-          <MetricStat
-            label="Progress"
-            value={progress}
-            suffix="%"
-            icon={<Activity className="w-4 h-4" />}
-          />
-          <ProgressBar value={progress} className="mt-3" />
-        </Card>
-        
-        <Card className="p-4">
-          <MetricStat
-            label="Events"
-            value={thread.events.length}
-            icon={<MessageSquare className="w-4 h-4" />}
-          />
-        </Card>
-        
-        <Card className="p-4">
-          <MetricStat
-            label="Agents"
-            value={new Set(thread.events.map(e => e.agent.id)).size}
-            icon={<Users className="w-4 h-4" />}
-          />
-        </Card>
-        
-        <Card className="p-4">
-          <MetricStat
-            label="Duration"
-            value="4m"
-            suffix="ago"
-            icon={<Clock className="w-4 h-4" />}
-          />
-        </Card>
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Timeline - Takes 2 columns on large screens */}
-        <div className="lg:col-span-2">
-          <Card className="p-6">
-            <ThreadTimeline events={thread.events} />
-          </Card>
-        </div>
-
-        {/* Conflict Panel - Takes 1 column */}
-        <div>
-          {hasConflict && thread.conflict && (
-            <div className="sticky top-6">
-              <Card className="p-6">
-                <ConflictPanel 
-                  conflict={thread.conflict} 
-                  onResolve={(option) => {
-                    console.log('Conflict resolved with:', option);
-                    // In a real app, this would update the thread state
-                  }}
-                />
-              </Card>
-            </div>
-          )}
-
-          {/* Active Agents Panel */}
-          <Card className="p-6 mt-6">
-            <h3 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
-              Active Agents
-            </h3>
-            <div className="space-y-3">
-              {Array.from(new Set(thread.events.map(e => e.agent))).map((agent) => (
-                <div key={agent.id} className="flex items-center gap-3">
-                  <Avatar
-                    name={agent.name}
-                    initials={agent.avatar}
-                    className="w-8 h-8"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm text-neutral-900 dark:text-neutral-100">
-                        {agent.name}
-                      </span>
-                      <Badge variant="secondary" className="text-xs">
-                        {agent.role}
-                      </Badge>
-                    </div>
-                    <div className="text-xs text-neutral-500">
-                      Accuracy: {(agent.metrics.accuracy * 100).toFixed(0)}% 
-                      {' • '}
-                      Latency: {agent.metrics.latency}ms
-                    </div>
-                  </div>
+      {/* Timeline */}
+      <div className="flex-1 overflow-y-auto px-6 py-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {thread.events.map((event, index) => (
+            <div key={index} className="flex gap-4">
+              <Avatar className="w-10 h-10 flex-shrink-0 mt-1">
+                {event.agent.avatar}
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-medium text-neutral-900 dark:text-white">
+                    {event.agent.name}
+                  </span>
+                  <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                    • {formatTimestamp(event.timestamp)}
+                  </span>
+                  {event.type !== 'message' && (
+                    <Badge variant="outline" className="text-xs">
+                      {event.type}
+                    </Badge>
+                  )}
                 </div>
+                <Card className="p-4 bg-white dark:bg-neutral-900">
+                  <p className="text-neutral-700 dark:text-neutral-300">
+                    {event.content}
+                  </p>
+                  {event.logicChain && (
+                    <div className="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-700">
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
+                        Logic Chain:
+                      </p>
+                      <ol className="text-sm text-neutral-600 dark:text-neutral-400 space-y-1">
+                        {event.logicChain.map((step, i) => (
+                          <li key={i} className="flex items-center gap-2">
+                            <span className="w-4 h-4 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-xs">
+                              {i + 1}
+                            </span>
+                            {step}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
+                </Card>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Conflict Panel */}
+      {thread.conflict && (
+        <div className="border-t border-neutral-200 dark:border-neutral-800 bg-amber-50 dark:bg-amber-950/20 px-6 py-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-2 mb-3">
+              <Badge variant="warning">Conflict Detected</Badge>
+              <span className="text-sm text-neutral-600 dark:text-neutral-400">
+                {thread.conflict.reason}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {thread.conflict.options.map((option, index) => (
+                <Card
+                  key={index}
+                  className="p-4 bg-white dark:bg-neutral-900 border-amber-200 dark:border-amber-800 cursor-pointer hover:border-amber-400 dark:hover:border-amber-600 transition-colors"
+                  onClick={() => handleResolveConflict(option.label)}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <Avatar className="w-6 h-6 text-sm">{option.agent.avatar}</Avatar>
+                    <span className="font-medium text-neutral-900 dark:text-white text-sm">
+                      {option.agent.name}
+                    </span>
+                  </div>
+                  <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-2">
+                    {option.description}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      {option.label}
+                    </Badge>
+                    <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                      → {option.outcome}
+                    </span>
+                  </div>
+                </Card>
               ))}
             </div>
-          </Card>
-
-          {/* Thread Actions */}
-          <Card className="p-6 mt-6">
-            <h3 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
-              Thread Actions
-            </h3>
-            <div className="space-y-2">
-              <Button variant="secondary" className="w-full justify-start">
-                <Play className="w-4 h-4 mr-2" />
-                Resume Thread
-              </Button>
-              <Button variant="secondary" className="w-full justify-start">
-                <Pause className="w-4 h-4 mr-2" />
-                Pause Thread
-              </Button>
-              <Button variant="secondary" className="w-full justify-start">
-                <Clock className="w-4 h-4 mr-2" />
-                Schedule Check
-              </Button>
-            </div>
-          </Card>
+          </div>
         </div>
+      )}
+
+      {/* Command Input */}
+      <div className="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 px-6 py-4">
+        <form onSubmit={handleSendCommand} className="max-w-4xl mx-auto">
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={command}
+              onChange={(e) => setCommand(e.target.value)}
+              placeholder="Type a command or message..."
+              disabled={isSending}
+              className="flex-1 px-4 py-3 bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg text-neutral-900 dark:text-white placeholder-neutral-500 dark:placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50"
+            />
+            <Button
+              type="submit"
+              disabled={!command.trim() || isSending}
+              className="px-6"
+            >
+              {isSending ? (
+                'Sending...'
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Send
+                </>
+              )}
+            </Button>
+          </div>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
+            Commands are processed by agents. Use natural language to request actions.
+          </p>
+        </form>
       </div>
     </div>
   );
