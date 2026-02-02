@@ -8,11 +8,21 @@ app/
     [workspaceId]/
       layout.tsx (Shell - LeftNav, TopBar, RightRail)
       page.tsx (Mission Control)
+      mission-control/
+        page.tsx
       modules/
         [moduleSlug]/
           page.tsx (General Module View)
           [threadSlug]/
             page.tsx (Thread Detail)
+        seo-cluster/
+          page.tsx
+        content-factory/
+          page.tsx
+        social-growth/
+          page.tsx
+        saas-launch-ops/
+          page.tsx
       settings/
         page.tsx
 components/
@@ -22,7 +32,12 @@ components/
   providers/
 data/
   mockData.ts (Interfaces and Mock Data)
-  index.ts
+  missionControl.ts
+  seoCluster.ts
+  contentFactory.ts
+  socialGrowth.ts
+  saasLaunchOps.ts
+  workspaceSettings.ts
 lib/
   utils.ts
   theme.ts (Design Tokens)
