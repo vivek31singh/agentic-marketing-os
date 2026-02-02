@@ -1,9 +1,9 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
@@ -13,65 +13,46 @@ const badgeVariants = cva(
           "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive:
           "border-transparent bg-danger text-danger-foreground shadow hover:bg-danger/80",
-        outline:
-          "text-foreground border-border bg-transparent hover:bg-accent hover:text-accent-foreground",
-        ghost:
-          "text-foreground border-transparent bg-primary/10 hover:bg-primary/20",
-      },
-      size: {
-        default: "h-5 px-2.5 py-0.5 text-xs",
-        sm: "h-4 px-2 py-0 text-[10px]",
-        lg: "h-6 px-3 py-0.5 text-sm",
+        outline: "text-foreground border-neutral-200 bg-transparent hover:bg-neutral-100 hover:text-neutral-900",
+        ghost: "text-foreground border-transparent bg-transparent hover:bg-neutral-100 hover:text-neutral-900",
       },
     },
     defaultVariants: {
       variant: "default",
-      size: "default",
     },
   }
-)
+);
 
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {
-  withDot?: boolean
-  dotColor?: "primary" | "success" | "warning" | "danger" | "neutral"
+  withDot?: boolean;
+  dotColor?: "primary" | "secondary" | "success" | "warning" | "danger" | "neutral";
 }
 
 const dotColorMap: Record<BadgeProps["dotColor"], string> = {
   primary: "bg-primary",
+  secondary: "bg-secondary",
   success: "bg-success",
   warning: "bg-warning",
   danger: "bg-danger",
-  neutral: "bg-neutral-500",
-}
+  neutral: "bg-neutral-400",
+};
 
-function Badge({ className, variant, size, withDot = false, dotColor, ...props }: BadgeProps) {
-  const variantDotColorMap: Record<string, string> = {
-    default: "bg-primary",
-    secondary: "bg-secondary-foreground",
-    destructive: "bg-danger",
-    outline: "bg-foreground",
-    ghost: "bg-primary",
-  }
-
-  const resolvedDotColor = dotColor 
-    ? dotColorMap[dotColor] 
-    : variantDotColorMap[variant || "default"]
-
+function Badge({ className, variant, withDot, dotColor = "primary", ...props }: BadgeProps) {
   return (
-    <div className={cn(badgeVariants({ variant, size }), className)} {...props}>
+    <div className={cn(badgeVariants({ variant }), className)} {...props}>
       {withDot && (
         <span
           className={cn(
             "mr-1.5 h-1.5 w-1.5 rounded-full",
-            resolvedDotColor
+            dotColorMap[dotColor] || dotColorMap.primary
           )}
         />
       )}
       {props.children}
     </div>
-  )
+  );
 }
 
-export { Badge, badgeVariants }
+export { Badge, badgeVariants };
