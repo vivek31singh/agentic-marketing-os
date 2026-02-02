@@ -1,179 +1,119 @@
-'use client';
-
-import React from 'react';
 import { Event } from '@/data/mockData';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/Accordion';
-import { MessageSquare, AlertTriangle, Settings, Clock, ChevronRight } from 'lucide-react';
+import { Badge } from '@/components/ui/Badge';
+import { Clock, GitBranch, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+export type ViewMode = 'standard' | 'logic' | 'debug';
 
 interface ThreadTimelineProps {
   events: Event[];
-  className?: string;
+  viewMode: ViewMode;
 }
 
-const getEventIcon = (type: Event['type']) => {
-  switch (type) {
-    case 'message':
-      return MessageSquare;
-    case 'conflict':
-      return AlertTriangle;
-    case 'system':
-      return Settings;
-    default:
-      return MessageSquare;
+export function ThreadTimeline({ events, viewMode }: ThreadTimelineProps) {
+  if (!events || events.length === 0) {
+    return (
+      <div className="text-center py-12 text-neutral-400">
+        No events in this thread yet.
+      </div>
+    );
   }
-};
 
-const getEventColor = (type: Event['type']) => {
-  switch (type) {
-    case 'message':
-      return 'text-blue-500 bg-blue-50 dark:bg-blue-950';
-    case 'conflict':
-      return 'text-amber-500 bg-amber-50 dark:bg-amber-950';
-    case 'system':
-      return 'text-neutral-500 bg-neutral-50 dark:bg-neutral-950';
-    default:
-      return 'text-neutral-500 bg-neutral-50 dark:bg-neutral-950';
-  }
-};
-
-const formatTimestamp = (timestamp: string) => {
-  const date = new Date(timestamp);
-  return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-};
-
-export const ThreadTimeline: React.FC<ThreadTimelineProps> = ({ events, className }) => {
   return (
-    <div className={cn('space-y-4', className)}>
-      <div className="flex items-center gap-2 mb-6">
-        <Clock className="w-4 h-4 text-neutral-500" />
-        <h3 className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Timeline</h3>
-        <Badge variant="secondary" className="text-xs">{events.length} events</Badge>
-      </div>
-
-      <div className="relative">
-        {/* Timeline connector line */}
-        <div className="absolute left-4 top-0 bottom-0 w-px bg-neutral-200 dark:bg-neutral-800" />
-
-        {events.map((event, index) => {
-          const Icon = getEventIcon(event.type);
-          const iconColor = getEventColor(event.type);
-          const isConflict = event.type === 'conflict';
-
-          return (
-            <div key={index} className="relative pl-10 pb-6 last:pb-0">
-              {/* Timeline dot with icon */}
-              <div className={cn(
-                "absolute left-0 flex items-center justify-center w-8 h-8 rounded-full border-2 border-white dark:border-neutral-900 z-10",
-                iconColor
-              )}>
-                <Icon className="w-4 h-4" />
-              </div>
-
-              {/* Event content */}
-              <Card className={cn(
-                "transition-all hover:shadow-md",
-                isConflict && "border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/20"
-              )}>
-                <div className="p-4">
-                  <div className="flex items-start gap-3 mb-2">
-                    <Avatar
-                      name={event.agent.name}
-                      initials={event.agent.avatar}
-                      className="w-8 h-8 text-xs"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">
-                          {event.agent.name}
-                        </span>
-                        <span className="text-xs text-neutral-500">
-                          {event.agent.role}
-                        </span>
-                        <span className="text-xs text-neutral-400 ml-auto">
-                          {formatTimestamp(event.timestamp)}
-                        </span>
-                      </div>
-                      <p className="text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed">
-                        {event.content}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Meta information */}
-                  {event.meta && Object.keys(event.meta).length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                      <Accordion type="single" collapsible className="w-full">
-                        <AccordionItem value="meta" className="border-b-0">
-                          <AccordionTrigger className="py-1 hover:no-underline">
-                            <span className="text-xs text-neutral-500">View Details</span>
-                          </AccordionTrigger>
-                          <AccordionContent className="pt-2">
-                            <div className="space-y-2 text-xs">
-                              {Object.entries(event.meta).map(([key, value]) => {
-                                if (key === 'tags' && Array.isArray(value)) {
-                                  return (
-                                    <div key={key} className="flex items-start gap-2">
-                                      <span className="text-neutral-500 capitalize">{key}:</span>
-                                      <div className="flex flex-wrap gap-1">
-                                        {value.map((tag: string, tagIdx: number) => (
-                                          <Badge key={tagIdx} variant="outline" className="text-xs py-0 px-2">
-                                            {tag}
-                                          </Badge>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  );
-                                }
-                                return (
-                                  <div key={key} className="flex items-start gap-2">
-                                    <span className="text-neutral-500 capitalize">{key}:</span>
-                                    <span className="text-neutral-700 dark:text-neutral-300">
-                                      {Array.isArray(value) ? value.join(', ') : String(value)}
-                                    </span>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-                    </div>
-                  )}
-
-                  {/* Logic chain for system events */}
-                  {event.logicChain && event.logicChain.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-800">
-                      <Accordion type="single" collapsible className="w-full">
-                        <AccordionItem value="logic" className="border-b-0">
-                          <AccordionTrigger className="py-1 hover:no-underline">
-                            <span className="text-xs text-neutral-500">View Logic Chain</span>
-                          </AccordionTrigger>
-                          <AccordionContent className="pt-2">
-                            <div className="space-y-2">
-                              {event.logicChain.map((step, stepIdx) => (
-                                <div key={stepIdx} className="flex items-center gap-2 text-xs">
-                                  <div className="w-4 h-4 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500">
-                                    {stepIdx + 1}
-                                  </div>
-                                  <span className="text-neutral-700 dark:text-neutral-300">{step}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-                    </div>
-                  )}
-                </div>
-              </Card>
-            </div>
-          );
-        })}
-      </div>
+    <div className="space-y-4">
+      {events.map((event, index) => (
+        <EventItem key={index} event={event} viewMode={viewMode} />
+      ))}
     </div>
   );
-};
+}
+
+interface EventItemProps {
+  event: Event;
+  viewMode: ViewMode;
+}
+
+function EventItem({ event, viewMode }: EventItemProps) {
+  const isConflict = event.type === 'conflict';
+  const isSystem = event.type === 'system';
+  const isMessage = event.type === 'message';
+
+  const showLogicChain = viewMode === 'logic' && event.logicChain && event.logicChain.length > 0;
+  const showMeta = viewMode === 'debug' && event.meta && Object.keys(event.meta).length > 0;
+
+  return (
+    <Card className="p-4 hover:border-neutral-300 transition-colors">
+      <div className="flex items-start gap-3">
+        {/* Avatar */}
+        <div className="flex-shrink-0">
+          <Avatar
+            src={event.agent?.avatar}
+            alt={event.agent?.name || 'System'}
+            size="md"
+          />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          {/* Header: Agent name and timestamp */}
+          <div className="flex items-center gap-2 mb-2">
+            <span className="font-medium text-neutral-900">
+              {event.agent?.name || 'System'}
+            </span>
+            <span className="text-neutral-400">·</span>
+            <span className="text-sm text-neutral-500 flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              {new Date(event.timestamp).toLocaleTimeString()}
+            </span>
+            <Badge variant={isConflict ? 'error' : isSystem ? 'neutral' : 'success'} className="ml-auto">
+              {event.type}
+            </Badge>
+          </div>
+
+          {/* Main content */}
+          <p className="text-neutral-700 mb-3">{event.content}</p>
+
+          {/* Logic Chain View - for Logic mode */}
+          {showLogicChain && (
+            <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+              <div className="flex items-center gap-2 text-blue-900 font-medium text-sm mb-2">
+                <GitBranch className="h-4 w-4" />
+                Logic Chain
+              </div>
+              <ol className="space-y-1.5">
+                {event.logicChain!.map((step, idx) => (
+                  <li key={idx} className="text-sm text-blue-800 flex items-start gap-2">
+                    <span className="text-blue-400 font-mono text-xs mt-0.5">{idx + 1}.</span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          {/* Meta Details View - for Debug mode */}
+          {showMeta && (
+            <div className="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-100">
+              <div className="flex items-center gap-2 text-amber-900 font-medium text-sm mb-2">
+                <Settings className="h-4 w-4" />
+                Debug Meta
+              </div>
+              <div className="space-y-2">
+                {Object.entries(event.meta!).map(([key, value]) => (
+                  <div key={key} className="text-sm">
+                    <span className="text-amber-600 font-mono">{key}:</span>
+                    <span className="text-amber-900 ml-2">
+                      {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+}
