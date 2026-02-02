@@ -1,2 +1,14 @@
 # agentic-marketing-os
-A production-grade, multi-page Next.js frontend that recreates a Discord-style “Agentic Marketing OS” console for AI-driven marketing operations. It focuses entirely on UI/UX—Mission Control dashboards, module workspaces (SEO_Cluster, Content_Factory, Social_Growth, etc.), and rich thread views with conflicts, agent scorecards, and interactive work
+
+**Automated project built via Dev Agents.**
+
+This repository was initialized automatically.
+
+## Context Files
+The following documentation files contain the Golden Context for this project:
+- project_brief.md
+- technical_spec.md
+- implementation_plan.md
+- coding_guidelines.md
+
+Please refer to them for details.
