@@ -1,103 +1,77 @@
-import React from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '@/lib/utils';
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "@/lib/utils"
 
-/**
- * Badge Component Variants
- * Uses CVA for type-safe variant management
- */
 const badgeVariants = cva(
-  // Base styles
-  'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
-      // Color variants - aligned with theme.ts naming convention
       variant: {
-        default: 'bg-neutral-100 text-neutral-700 border border-neutral-200 hover:bg-neutral-200 focus:ring-neutral-500',
-        primary: 'bg-primary-50 text-primary-700 border border-primary-200 hover:bg-primary-100 focus:ring-primary-500',
-        secondary: 'bg-secondary-50 text-secondary-700 border border-secondary-200 hover:bg-secondary-100 focus:ring-secondary-500',
-        success: 'bg-success-50 text-success-700 border border-success-200 hover:bg-success-100 focus:ring-success-500',
-        warning: 'bg-warning-50 text-warning-700 border border-warning-200 hover:bg-warning-100 focus:ring-warning-500',
-        error: 'bg-error-50 text-error-700 border border-error-200 hover:bg-error-100 focus:ring-error-500',
-        info: 'bg-info-50 text-info-700 border border-info-200 hover:bg-info-100 focus:ring-info-500',
+        default:
+          "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
+        secondary:
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive:
+          "border-transparent bg-danger text-danger-foreground shadow hover:bg-danger/80",
+        outline:
+          "text-foreground border-border bg-transparent hover:bg-accent hover:text-accent-foreground",
+        ghost:
+          "text-foreground border-transparent bg-primary/10 hover:bg-primary/20",
       },
-      // Size variants
       size: {
-        sm: 'px-2 py-0 text-[10px]',
-        md: 'px-2.5 py-0.5 text-xs',
-        lg: 'px-3 py-1 text-sm',
-      },
-      // Shape variants
-      shape: {
-        default: 'rounded-md',
-        pill: 'rounded-full',
-        square: 'rounded-none',
+        default: "h-5 px-2.5 py-0.5 text-xs",
+        sm: "h-4 px-2 py-0 text-[10px]",
+        lg: "h-6 px-3 py-0.5 text-sm",
       },
     },
     defaultVariants: {
-      variant: 'default',
-      size: 'md',
-      shape: 'default',
+      variant: "default",
+      size: "default",
     },
   }
-);
+)
 
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {
-  /**
-   * Optional dot indicator before the badge text
-   */
-  withDot?: boolean;
-  /**
-   * Custom icon to display in the badge
-   */
-  icon?: React.ReactNode;
+  withDot?: boolean
+  dotColor?: "primary" | "success" | "warning" | "danger" | "neutral"
 }
 
-/**
- * Badge Component
- * 
- * A reusable badge component for displaying status, categories, or labels.
- * Uses forwardRef for proper ref forwarding and accessibility.
- * 
- * @example
- * ```tsx
- * <Badge variant="success">Completed</Badge>
- * <Badge variant="error" withDot>Error</Badge>
- * <Badge variant="primary" size="lg" icon={<Icon />}>Label</Badge>
- * ```
- */
-export const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
-  ({ className, variant, size, shape, withDot, icon, children, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn(badgeVariants({ variant, size, shape }), className)}
-        {...props}
-      >
-        {withDot && (
-          <span
-            className={cn(
-              'h-1.5 w-1.5 rounded-full',
-              {
-                'bg-neutral-500': variant === 'default',
-                'bg-primary-500': variant === 'primary',
-                'bg-secondary-500': variant === 'secondary',
-                'bg-success-500': variant === 'success',
-                'bg-warning-500': variant === 'warning',
-                'bg-error-500': variant === 'error',
-                'bg-info-500': variant === 'info',
-              }
-            )}
-            aria-hidden="true"
-          />
-        )}
-        {icon && <span className="shrink-0">{icon}</span>}
-        {children && <span className="truncate">{children}</span>}
-      </div>
-    );
-  }
-);
+const dotColorMap: Record<BadgeProps["dotColor"], string> = {
+  primary: "bg-primary",
+  success: "bg-success",
+  warning: "bg-warning",
+  danger: "bg-danger",
+  neutral: "bg-neutral-500",
+}
 
-Badge.displayName = 'Badge';
+function Badge({ className, variant, size, withDot = false, dotColor, ...props }: BadgeProps) {
+  const variantDotColorMap: Record<string, string> = {
+    default: "bg-primary",
+    secondary: "bg-secondary-foreground",
+    destructive: "bg-danger",
+    outline: "bg-foreground",
+    ghost: "bg-primary",
+  }
+
+  const resolvedDotColor = dotColor 
+    ? dotColorMap[dotColor] 
+    : variantDotColorMap[variant || "default"]
+
+  return (
+    <div className={cn(badgeVariants({ variant, size }), className)} {...props}>
+      {withDot && (
+        <span
+          className={cn(
+            "mr-1.5 h-1.5 w-1.5 rounded-full",
+            resolvedDotColor
+          )}
+        />
+      )}
+      {props.children}
+    </div>
+  )
+}
+
+export { Badge, badgeVariants }
