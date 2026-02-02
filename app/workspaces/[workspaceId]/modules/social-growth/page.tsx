@@ -1,114 +1,300 @@
-import React from 'react';
-import Link from 'next/link';
-import { Flame, Bell, Heart, Users, ArrowRight, Clock, TrendingUp, MessageCircle, Share2 } from 'lucide-react';
-import { socialGrowthMetrics, socialThreads } from '@/data/socialGrowth';
+'use client';
+
+import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import { MetricStat } from '@/components/ui/MetricStat';
+import { Tag } from '@/components/ui/Tag';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { Avatar } from '@/components/ui/Avatar';
+import { CheckCircle2, AlertCircle, TrendingUp, Users, Zap, RefreshCw, Wand2, XCircle } from 'lucide-react';
+import { socialGrowthThreads, socialGrowthMetrics } from '@/data/socialGrowth';
 
-const socialTypeIcons = {
-  analysis: TrendingUp,
-  outreach: MessageCircle,
-  campaign: Share2,
-  audit: Users
-} as const;
+interface Conflict {
+  id: string;
+  reason: string;
+  options: Array<{
+    id: string;
+    agent: string;
+    description: string;
+    label: string;
+  }>;
+}
 
-const statusColors = {
-  active: 'success',
-  review: 'warning',
-  pending: 'neutral'
-} as const;
+interface ThreadCardProps {
+  thread: typeof socialGrowthThreads[0];
+}
+
+function ThreadCard({ thread }: ThreadCardProps) {
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [isApproving, setIsApproving] = useState(false);
+  const [approvedOptionId, setApprovedOptionId] = useState<string | null>(null);
+
+  const [retryLoading, setRetryLoading] = useState(false);
+  const [autoFixLoading, setAutoFixLoading] = useState(false);
+  const [ignoreLoading, setIgnoreLoading] = useState(false);
+  const [actionFeedback, setActionFeedback] = useState<{ type: 'retry' | 'autofix' | 'ignore' | null; message: string }>({ type: null, message: '' });
+
+  const handleApprove = (optionId: string) => {
+    setSelectedOptionId(optionId);
+    setIsApproving(true);
+    setActionFeedback({ type: null, message: '' });
+
+    setTimeout(() => {
+      setApprovedOptionId(optionId);
+      setIsApproving(false);
+    }, 1000);
+  };
+
+  const handleRetry = () => {
+    setRetryLoading(true);
+    setActionFeedback({ type: null, message: '' });
+    setTimeout(() => {
+      setRetryLoading(false);
+      setActionFeedback({ type: 'retry', message: 'Retry initiated' });
+    }, 800);
+  };
+
+  const handleAutoFix = () => {
+    setAutoFixLoading(true);
+    setActionFeedback({ type: null, message: '' });
+    setTimeout(() => {
+      setAutoFixLoading(false);
+      setActionFeedback({ type: 'autofix', message: 'Auto-fix applied successfully' });
+    }, 1200);
+  };
+
+  const handleIgnore = () => {
+    setIgnoreLoading(true);
+    setActionFeedback({ type: null, message: '' });
+    setTimeout(() => {
+      setIgnoreLoading(false);
+      setActionFeedback({ type: 'ignore', message: 'Issue marked as ignored' });
+    }, 600);
+  };
+
+  return (
+    <Card className="p-6">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg ${thread.status === 'active' ? 'bg-primary-100 text-primary-600' : 'bg-neutral-100 text-neutral-600'}`}>
+            {thread.status === 'active' ? <TrendingUp className="w-5 h-5" /> : <Zap className="w-5 h-5" />}
+          </div>
+          <div>
+            <h3 className="font-semibold text-neutral-900">{thread.title}</h3>
+            <p className="text-sm text-neutral-500">{thread.objective}</p>
+          </div>
+        </div>
+        <Badge variant={thread.status === 'active' ? 'success' : 'neutral'}>
+          {thread.status}
+        </Badge>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-4">
+        {thread.tags.map((tag) => (
+          <Tag key={tag} variant="outline">
+            {tag}
+          </Tag>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="flex items-center gap-2 text-sm text-neutral-600">
+          <Users className="w-4 h-4" />
+          <span>{thread.engagementRate} engagement rate</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-neutral-600">
+          <Zap className="w-4 h-4" />
+          <span>{thread.viralPotential} viral potential</span>
+        </div>
+      </div>
+
+      {thread.conflict && (
+        <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="flex items-center gap-2 text-amber-800 mb-3">
+            <AlertCircle className="w-5 h-5" />
+            <span className="font-medium">Conflict Resolution Required</span>
+          </div>
+          <p className="text-sm text-amber-700 mb-3">{thread.conflict.reason}</p>
+          
+          {!approvedOptionId ? (
+            <div className="space-y-2">
+              {thread.conflict.options.map((option) => (
+                <div
+                  key={option.id}
+                  className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                    selectedOptionId === option.id
+                      ? 'border-primary-500 bg-primary-50 ring-2 ring-primary-200'
+                      : 'border-amber-200 bg-white hover:bg-amber-50'
+                  }`}
+                  onClick={() => !isApproving && handleApprove(option.id)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge variant="outline" className="text-xs">{option.agent}</Badge>
+                        <span className="font-medium text-sm text-neutral-900">{option.label}</span>
+                      </div>
+                      <p className="text-sm text-neutral-600">{option.description}</p>
+                    </div>
+                    {selectedOptionId === option.id && !approvedOptionId && (
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleApprove(option.id);
+                        }}
+                        disabled={isApproving}
+                      >
+                        {isApproving ? 'Approving...' : 'Approve'}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-green-700 bg-green-100 p-3 rounded-lg">
+              <CheckCircle2 className="w-5 h-5" />
+              <span className="font-medium">Option approved successfully</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {thread.hasError && (
+        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center gap-2 text-red-800 mb-3">
+            <AlertCircle className="w-5 h-5" />
+            <span className="font-medium">Recovery Action Required</span>
+          </div>
+          <p className="text-sm text-red-700 mb-3">
+            Failed to fetch trend data from Twitter API. Rate limit exceeded.
+          </p>
+          
+          {actionFeedback.type && (
+            <div className={`mb-3 p-2 rounded text-sm ${
+              actionFeedback.type === 'ignore' 
+                ? 'bg-neutral-100 text-neutral-700' 
+                : 'bg-green-100 text-green-700'
+            }`}>
+              {actionFeedback.message}
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleRetry}
+              disabled={retryLoading || autoFixLoading || ignoreLoading}
+            >
+              {retryLoading ? (
+                <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Retrying...</>
+              ) : (
+                <><RefreshCw className="w-4 h-4 mr-2" /> Retry</>
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleAutoFix}
+              disabled={retryLoading || autoFixLoading || ignoreLoading}
+            >
+              {autoFixLoading ? (
+                <><Wand2 className="w-4 h-4 mr-2 animate-pulse" /> Fixing...</>
+              ) : (
+                <><Wand2 className="w-4 h-4 mr-2" /> Auto-Fix</>
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleIgnore}
+              disabled={retryLoading || autoFixLoading || ignoreLoading}
+            >
+              {ignoreLoading ? (
+                'Ignoring...'
+              ) : (
+                <><XCircle className="w-4 h-4 mr-2" /> Ignore</>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <div className="mt-4 flex items-center justify-between">
+        <ProgressBar value={thread.progress} className="flex-1 mr-4" />
+        <span className="text-sm font-medium text-neutral-700">{thread.progress}%</span>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-neutral-200">
+        <div className="flex items-center justify-between">
+          <div className="flex -space-x-2">
+            {thread.agents.map((agent) => (
+              <Avatar
+                key={agent.id}
+                src={agent.avatar}
+                alt={agent.name}
+                size="sm"
+                className="border-2 border-white"
+              />
+            ))}
+          </div>
+          <Button size="sm" variant="outline">
+            View Thread
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 export default function SocialGrowthPage() {
   return (
-    <div className="p-6 space-y-6">
-      {/* Header Section */}
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Social Growth Module</h1>
-          <p className="text-neutral-600">Monitor social trends and manage viral campaigns</p>
+          <h1 className="text-2xl font-bold text-neutral-900">Social Growth</h1>
+          <p className="text-neutral-600">Manage viral content strategy and influencer campaigns</p>
         </div>
-        <Badge variant="primary">System Operational</Badge>
+        <Badge variant="success" withDot>Module Active</Badge>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {socialGrowthMetrics.map((metric) => {
-          const IconComponent = {
-            flame: Flame,
-            bell: Bell,
-            heart: Heart,
-            users: Users
-          }[metric.icon as keyof typeof typeof { flame: Flame, bell: Bell, heart: Heart, users: Users }] || Flame;
-          
-          return (
-            <MetricStat
-              key={metric.label}
-              label={metric.label}
-              value={metric.value}
-              trend={metric.trend}
-              icon={<IconComponent className="w-5 h-5" />}
-            />
-          );
-        })}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <MetricStat
+          label="Viral Potential"
+          value={socialGrowthMetrics.viralPotential}
+          trend="+12%"
+          trendUp={true}
+          icon={<Zap className="w-5 h-5" />}
+        />
+        <MetricStat
+          label="Trend Alerts"
+          value={socialGrowthMetrics.trendAlerts}
+          trend="+3 new"
+          trendUp={true}
+          icon={<TrendingUp className="w-5 h-5" />}
+        />
+        <MetricStat
+          label="Engagement Rate"
+          value={`${socialGrowthMetrics.engagementRate}%`}
+          trend="+5%"
+          trendUp={true}
+          icon={<Users className="w-5 h-5" />}
+        />
       </div>
 
-      {/* Active Threads Grid */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Active Social Threads</h2>
+      <div>
+        <h2 className="text-lg font-semibold text-neutral-900 mb-4">Active Threads</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {socialThreads.map((thread) => {
-            const threadType = thread.id.split('-')[0] as keyof typeof socialTypeIcons;
-            const IconComponent = socialTypeIcons[threadType] || TrendingUp;
-            
-            return (
-              <Card key={thread.id} className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary-50 rounded-lg">
-                      <IconComponent className="w-5 h-5 text-primary-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">{thread.title}</h3>
-                      <p className="text-sm text-neutral-500">{thread.objective}</p>
-                    </div>
-                  </div>
-                  <Badge variant={statusColors[thread.status as keyof typeof statusColors]}>
-                    {thread.status}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between mt-4">
-                  <div className="flex items-center gap-2 text-sm text-neutral-500">
-                    <Clock className="w-4 h-4" />
-                    <span>Updated 2h ago</span>
-                  </div>
-                  <Link href={`./${thread.id}`}>
-                    <Button variant="ghost" size="sm">
-                      View Details
-                      <ArrowRight className="ml-2 w-4 h-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </Card>
-            );
-          })}
+          {socialGrowthThreads.map((thread) => (
+            <ThreadCard key={thread.id} thread={thread} />
+          ))}
         </div>
       </div>
-
-      {/* Quick Actions */}
-      <Card className="p-6 bg-gradient-to-r from-primary-50 to-purple-50">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold mb-1">Quick Actions</h3>
-            <p className="text-sm text-neutral-600">Launch new campaigns or analyze trends</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="secondary">Analyze Trends</Button>
-            <Button>New Campaign</Button>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }

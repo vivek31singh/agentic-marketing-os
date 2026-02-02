@@ -1,297 +1,287 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import { MetricStat } from '@/components/ui/MetricStat';
-import { 
-  ArrowRight, 
-  AlertTriangle, 
-  CheckCircle, 
-  Clock, 
-  RefreshCw, 
-  Wrench, 
-  XCircle,
-  Rocket,
-  FileCheck,
-  Users,
-  Target
-} from 'lucide-react';
+import { Tag } from '@/components/ui/Tag';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { Avatar } from '@/components/ui/Avatar';
+import { CheckCircle2, AlertCircle, Rocket, FileCheck, Clock, RefreshCw, Wand2, XCircle } from 'lucide-react';
 import { saasLaunchOpsThreads, saasLaunchOpsMetrics } from '@/data/saasLaunchOps';
 
-interface ConflictOption {
-  id: string;
-  agent: string;
-  description: string;
-  label: string;
+interface ThreadCardProps {
+  thread: typeof saasLaunchOpsThreads[0];
 }
 
-export default function SaaSLaunchOpsPage() {
-  const [selectedConflictOption, setSelectedConflictOption] = useState<string | null>(null);
-  const [recoveryActions, setRecoveryActions] = useState<Record<string, 'loading' | 'success' | null>>({});
+function ThreadCard({ thread }: ThreadCardProps) {
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const [isApproving, setIsApproving] = useState(false);
+  const [approvedOptionId, setApprovedOptionId] = useState<string | null>(null);
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Clock className="h-4 w-4" />;
-      case 'needs_approval':
-        return <AlertTriangle className="h-4 w-4" />;
-      case 'in_progress':
-        return <RefreshCw className="h-4 w-4" />;
-      case 'completed':
-        return <CheckCircle className="h-4 w-4" />;
-      case 'needs_attention':
-        return <XCircle className="h-4 w-4" />;
-      case 'pending':
-        return <Clock className="h-4 w-4" />;
-      default:
-        return <Clock className="h-4 w-4" />;
-    }
-  };
+  const [retryLoading, setRetryLoading] = useState(false);
+  const [autoFixLoading, setAutoFixLoading] = useState(false);
+  const [ignoreLoading, setIgnoreLoading] = useState(false);
+  const [actionFeedback, setActionFeedback] = useState<{ type: 'retry' | 'autofix' | 'ignore' | null; message: string }>({ type: null, message: '' });
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, any> = {
-      active: { variant: 'secondary' as const, label: 'Active' },
-      needs_approval: { variant: 'warning' as const, label: 'Needs Approval' },
-      in_progress: { variant: 'info' as const, label: 'In Progress' },
-      completed: { variant: 'success' as const, label: 'Completed' },
-      needs_attention: { variant: 'danger' as const, label: 'Needs Attention' },
-      pending: { variant: 'neutral' as const, label: 'Pending' },
-    };
-    
-    const config = variants[status] || variants.active;
-    return <Badge variant={config.variant}>{config.label}</Badge>;
-  };
+  const handleApprove = (optionId: string) => {
+    setSelectedOptionId(optionId);
+    setIsApproving(true);
+    setActionFeedback({ type: null, message: '' });
 
-  const getMetricIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'rocket':
-        return <Rocket className="h-5 w-5" />;
-      case 'file-check':
-        return <FileCheck className="h-5 w-5" />;
-      case 'users':
-        return <Users className="h-5 w-5" />;
-      case 'target':
-        return <Target className="h-5 w-5" />;
-      default:
-        return <Target className="h-5 w-5" />;
-    }
-  };
-
-  const handleConflictApprove = (optionId: string) => {
-    setSelectedConflictOption(optionId);
-    // In a real app, this would call an API
     setTimeout(() => {
-      setSelectedConflictOption(null);
-    }, 2000);
+      setApprovedOptionId(optionId);
+      setIsApproving(false);
+    }, 1000);
   };
 
-  const handleRecoveryAction = (action: string, threadId: string) => {
-    setRecoveryActions(prev => ({ ...prev, [threadId]: action }));
-    
-    if (action === 'retry') {
-      setTimeout(() => {
-        setRecoveryActions(prev => ({ ...prev, [threadId]: 'success' }));
-        setTimeout(() => {
-          setRecoveryActions(prev => ({ ...prev, [threadId]: null }));
-        }, 2000);
-      }, 1000);
-    } else if (action === 'autofix') {
-      setTimeout(() => {
-        setRecoveryActions(prev => ({ ...prev, [threadId]: 'success' }));
-        setTimeout(() => {
-          setRecoveryActions(prev => ({ ...prev, [threadId]: null }));
-        }, 2000);
-      }, 1500);
-    }
+  const handleRetry = () => {
+    setRetryLoading(true);
+    setActionFeedback({ type: null, message: '' });
+    setTimeout(() => {
+      setRetryLoading(false);
+      setActionFeedback({ type: 'retry', message: 'Retry initiated' });
+    }, 800);
   };
 
-  const mockConflicts: Record<string, ConflictOption[]> = {
-    'gtm-strategy': [
-      { id: '1', agent: 'Product_Lead', description: 'Launch in 3 weeks with feature complete v1.0', label: 'Feature Complete' },
-      { id: '2', agent: 'Marketing_Director', description: 'Delay 2 weeks for additional market research', label: 'Market Research' },
-    ],
-    'q1-asset-review': [
-      { id: '1', agent: 'Brand_Manager', description: 'Approve current assets with minor tweaks', label: 'Approve' },
-      { id: '2', agent: 'Creative_Director', description: 'Request major redesign before approval', label: 'Redesign' },
-    ],
+  const handleAutoFix = () => {
+    setAutoFixLoading(true);
+    setActionFeedback({ type: null, message: '' });
+    setTimeout(() => {
+      setAutoFixLoading(false);
+      setActionFeedback({ type: 'autofix', message: 'Auto-fix applied successfully' });
+    }, 1200);
+  };
+
+  const handleIgnore = () => {
+    setIgnoreLoading(true);
+    setActionFeedback({ type: null, message: '' });
+    setTimeout(() => {
+      setIgnoreLoading(false);
+      setActionFeedback({ type: 'ignore', message: 'Issue marked as ignored' });
+    }, 600);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header Section */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
-            SaaS Launch Ops
-          </h1>
-          <p className="mt-2 text-neutral-600 dark:text-neutral-400">
-            Coordinate product launches, manage asset approvals, and align go-to-market strategies across teams.
-          </p>
+    <Card className="p-6">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg ${thread.status === 'active' ? 'bg-primary-100 text-primary-600' : 'bg-neutral-100 text-neutral-600'}`}>
+            {thread.status === 'active' ? <Rocket className="w-5 h-5" /> : <FileCheck className="w-5 h-5" />}
+          </div>
+          <div>
+            <h3 className="font-semibold text-neutral-900">{thread.title}</h3>
+            <p className="text-sm text-neutral-500">{thread.objective}</p>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="success" className="flex items-center gap-1">
-            <CheckCircle className="h-3 w-3" />
-            System Operational
-          </Badge>
-          <Badge variant="secondary" className="flex items-center gap-1">
-            <Rocket className="h-3 w-3" />
-            Launch Mode
-          </Badge>
-        </div>
+        <Badge variant={thread.status === 'active' ? 'success' : 'neutral'}>
+          {thread.status}
+        </Badge>
       </div>
 
-      {/* Metrics Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {saasLaunchOpsMetrics.map((metric) => (
-          <MetricStat
-            key={metric.id}
-            label={metric.label}
-            value={metric.value}
-            trend={metric.trend}
-            trendDirection={metric.trendDirection}
-            status={metric.status}
-            icon={getMetricIcon(metric.icon)}
-          />
+      <div className="flex flex-wrap gap-2 mb-4">
+        {thread.tags.map((tag) => (
+          <Tag key={tag} variant="outline">
+            {tag}
+          </Tag>
         ))}
       </div>
 
-      {/* Threads Section */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
-          Active Launch Threads
-        </h2>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {saasLaunchOpsThreads.map((thread) => {
-            const conflictOptions = mockConflicts[thread.id];
-            const currentRecovery = recoveryActions[thread.id];
-            
-            return (
-              <Card key={thread.id} className="p-6 space-y-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      {getStatusIcon(thread.status)}
-                      <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-                        {thread.title}
-                      </h3>
-                    </div>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2">
-                      {thread.objective}
-                    </p>
-                  </div>
-                  {getStatusBadge(thread.status)}
-                </div>
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="flex items-center gap-2 text-sm text-neutral-600">
+          <Clock className="w-4 h-4" />
+          <span>{thread.timeToLaunch} to launch</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-neutral-600">
+          <FileCheck className="w-4 h-4" />
+          <span>{thread.pendingApprovals} pending approvals</span>
+        </div>
+      </div>
 
-                {/* Conflict Resolution Panel */}
-                {conflictOptions && (
-                  <div className="mt-4 p-4 bg-warning/10 border border-warning/20 rounded-lg space-y-3">
-                    <div className="flex items-center gap-2 text-warning">
-                      <AlertTriangle className="h-4 w-4" />
-                      <span className="text-sm font-medium">Conflict Detected</span>
+      {thread.conflict && (
+        <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="flex items-center gap-2 text-amber-800 mb-3">
+            <AlertCircle className="w-5 h-5" />
+            <span className="font-medium">Conflict Resolution Required</span>
+          </div>
+          <p className="text-sm text-amber-700 mb-3">{thread.conflict.reason}</p>
+          
+          {!approvedOptionId ? (
+            <div className="space-y-2">
+              {thread.conflict.options.map((option) => (
+                <div
+                  key={option.id}
+                  className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                    selectedOptionId === option.id
+                      ? 'border-primary-500 bg-primary-50 ring-2 ring-primary-200'
+                      : 'border-amber-200 bg-white hover:bg-amber-50'
+                  }`}
+                  onClick={() => !isApproving && handleApprove(option.id)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge variant="outline" className="text-xs">{option.agent}</Badge>
+                        <span className="font-medium text-sm text-neutral-900">{option.label}</span>
+                      </div>
+                      <p className="text-sm text-neutral-600">{option.description}</p>
                     </div>
-                    <div className="space-y-2">
-                      {conflictOptions.map((option) => (
-                        <div
-                          key={option.id}
-                          className={`p-3 rounded-md border cursor-pointer transition-colors ${
-                            selectedConflictOption === option.id
-                              ? 'bg-success/10 border-success/50'
-                              : 'bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                          }`}
-                          onClick={() => handleConflictApprove(option.id)}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                              {option.label}
-                            </span>
-                            <span className="text-xs text-neutral-500 dark:text-neutral-400">
-                              {option.agent}
-                            </span>
-                          </div>
-                          <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                            {option.description}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Recovery Actions */}
-                {thread.status === 'needs_attention' && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {currentRecovery === 'loading' ? (
-                      <Button variant="secondary" size="sm" disabled>
-                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                        Processing...
+                    {selectedOptionId === option.id && !approvedOptionId && (
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleApprove(option.id);
+                        }}
+                        disabled={isApproving}
+                      >
+                        {isApproving ? 'Approving...' : 'Approve'}
                       </Button>
-                    ) : currentRecovery === 'success' ? (
-                      <Button variant="success" size="sm" disabled>
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Resolved
-                      </Button>
-                    ) : (
-                      <>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={() => handleRecoveryAction('retry', thread.id)}
-                        >
-                          <RefreshCw className="h-4 w-4 mr-2" />
-                          Retry
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => handleRecoveryAction('autofix', thread.id)}
-                        >
-                          <Wrench className="h-4 w-4 mr-2" />
-                          Auto-Fix
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setRecoveryActions(prev => ({ ...prev, [thread.id]: 'ignored' }))}
-                        >
-                          Ignore
-                        </Button>
-                      </>
                     )}
                   </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex items-center justify-between pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                  <Link
-                    href={`/workspaces/[workspaceId]/modules/saas-launch-ops/${thread.id}`}
-                    className="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors"
-                  >
-                    View Thread
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                  {thread.status === 'needs_approval' && (
-                    <Button variant="primary" size="sm">
-                      Review Assets
-                    </Button>
-                  )}
-                  {thread.status === 'in_progress' && (
-                    <Button variant="secondary" size="sm">
-                      View Progress
-                    </Button>
-                  )}
-                  {thread.status === 'pending' && (
-                    <Button variant="outline" size="sm">
-                      Start Thread
-                    </Button>
-                  )}
                 </div>
-              </Card>
-            );
-          })}
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-green-700 bg-green-100 p-3 rounded-lg">
+              <CheckCircle2 className="w-5 h-5" />
+              <span className="font-medium">Option approved successfully</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {thread.hasError && (
+        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center gap-2 text-red-800 mb-3">
+            <AlertCircle className="w-5 h-5" />
+            <span className="font-medium">Recovery Action Required</span>
+          </div>
+          <p className="text-sm text-red-700 mb-3">
+            Asset validation failed. Missing required metadata fields.
+          </p>
+          
+          {actionFeedback.type && (
+            <div className={`mb-3 p-2 rounded text-sm ${
+              actionFeedback.type === 'ignore' 
+                ? 'bg-neutral-100 text-neutral-700' 
+                : 'bg-green-100 text-green-700'
+            }`}>
+              {actionFeedback.message}
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleRetry}
+              disabled={retryLoading || autoFixLoading || ignoreLoading}
+            >
+              {retryLoading ? (
+                <><RefreshCw className="w-4 h-4 mr-2 animate-spin" /> Retrying...</>
+              ) : (
+                <><RefreshCw className="w-4 h-4 mr-2" /> Retry</>
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleAutoFix}
+              disabled={retryLoading || autoFixLoading || ignoreLoading}
+            >
+              {autoFixLoading ? (
+                <><Wand2 className="w-4 h-4 mr-2 animate-pulse" /> Fixing...</>
+              ) : (
+                <><Wand2 className="w-4 h-4 mr-2" /> Auto-Fix</>
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleIgnore}
+              disabled={retryLoading || autoFixLoading || ignoreLoading}
+            >
+              {ignoreLoading ? (
+                'Ignoring...'
+              ) : (
+                <><XCircle className="w-4 h-4 mr-2" /> Ignore</>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <div className="mt-4 flex items-center justify-between">
+        <ProgressBar value={thread.progress} className="flex-1 mr-4" />
+        <span className="text-sm font-medium text-neutral-700">{thread.progress}%</span>
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-neutral-200">
+        <div className="flex items-center justify-between">
+          <div className="flex -space-x-2">
+            {thread.agents.map((agent) => (
+              <Avatar
+                key={agent.id}
+                src={agent.avatar}
+                alt={agent.name}
+                size="sm"
+                className="border-2 border-white"
+              />
+            ))}
+          </div>
+          <Button size="sm" variant="outline">
+            View Thread
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+export default function SaasLaunchOpsPage() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-neutral-900">SaaS Launch Ops</h1>
+          <p className="text-neutral-600">Manage product launches and go-to-market strategies</p>
+        </div>
+        <Badge variant="success" withDot>Module Active</Badge>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <MetricStat
+          label="Launch Readiness"
+          value={saasLaunchOpsMetrics.launchReadiness}
+          trend="+8%"
+          trendUp={true}
+          icon={<Rocket className="w-5 h-5" />}
+        />
+        <MetricStat
+          label="Asset Approval Queue"
+          value={saasLaunchOpsMetrics.approvalQueue}
+          trend="-2 items"
+          trendUp={true}
+          icon={<FileCheck className="w-5 h-5" />}
+        />
+        <MetricStat
+          label="Active Campaigns"
+          value={saasLaunchOpsMetrics.activeCampaigns}
+          trend="+1 new"
+          trendUp={true}
+          icon={<Clock className="w-5 h-5" />}
+        />
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold text-neutral-900 mb-4">Active Threads</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {saasLaunchOpsThreads.map((thread) => (
+            <ThreadCard key={thread.id} thread={thread} />
+          ))}
         </div>
       </div>
     </div>
