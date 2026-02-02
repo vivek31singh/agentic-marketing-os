@@ -1,208 +1,256 @@
-import React from 'react';
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Clock, FileText, Mail, Share2, Layout } from 'lucide-react';
-import { contentFactoryMetrics, contentThreads } from '@/data/contentFactory';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { MetricStat } from '@/components/ui/MetricStat';
-import { Avatar } from '@/components/ui/Avatar';
+import { ArrowRight, AlertTriangle, CheckCircle, Clock, RefreshCw, Wrench, XCircle } from 'lucide-react';
+import { contentFactoryThreads, contentFactoryMetrics } from '@/data/contentFactory';
 
-const contentTypeIcons = {
-  blog: FileText,
-  social: Share2,
-  email: Mail,
-  'landing-page': Layout,
-};
+interface ConflictOption {
+  id: string;
+  agent: string;
+  description: string;
+  outcome: string;
+}
 
-const statusColors = {
-  'in-progress': 'primary',
-  active: 'success',
-  pending: 'warning',
-  completed: 'success',
-} as const;
+interface Conflict {
+  id: string;
+  reason: string;
+  options: ConflictOption[];
+}
 
-const approvalStageColors = {
-  draft: 'neutral',
-  review: 'primary',
-  final: 'success',
-  published: 'success',
-} as const;
+interface RecoveryAction {
+  type: 'retry' | 'autofix' | 'ignore';
+  label: string;
+  status: 'idle' | 'loading' | 'success' | 'error';
+}
 
-export default function ContentFactoryPage({
-  params,
-}: {
-  params: { workspaceId: string };
-}) {
+export default function ContentFactoryPage() {
+  const [selectedConflicts, setSelectedConflicts] = useState<Record<string, string>>({});
+  const [recoveryStates, setRecoveryStates] = useState<Record<string, RecoveryAction>>({});
+
+  const handleConflictApprove = (threadId: string, optionId: string) => {
+    setSelectedConflicts((prev) => ({
+      ...prev,
+      [threadId]: optionId,
+    }));
+  };
+
+  const handleRecoveryAction = async (threadId: string, actionType: 'retry' | 'autofix' | 'ignore') => {
+    // Set loading state
+    setRecoveryStates((prev) => ({
+      ...prev,
+      [threadId]: {
+        type: actionType,
+        label: actionType === 'retry' ? 'Retry' : actionType === 'autofix' ? 'Auto-Fix' : 'Ignore',
+        status: 'loading',
+      },
+    }));
+
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    // Set success state
+    setRecoveryStates((prev) => ({
+      ...prev,
+      [threadId]: {
+        type: actionType,
+        label: actionType === 'retry' ? 'Retried' : actionType === 'autofix' ? 'Fixed' : 'Ignored',
+        status: 'success',
+      },
+    }));
+
+    // Reset after 2 seconds
+    setTimeout(() => {
+      setRecoveryStates((prev) => {
+        const newState = { ...prev };
+        delete newState[threadId];
+        return newState;
+      });
+    }, 2000);
+  };
+
+  const getRecoveryButton = (threadId: string, actionType: 'retry' | 'autofix' | 'ignore') => {
+    const state = recoveryStates[threadId];
+    const isActive = state?.type === actionType;
+    
+    if (isActive && state.status === 'loading') {
+      return (
+        <Button variant="secondary" size="sm" disabled className="opacity-70">
+          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+          {state.label}...
+        </Button>
+      );
+    }
+
+    if (isActive && state.status === 'success') {
+      return (
+        <Button variant="success" size="sm" disabled>
+          <CheckCircle className="w-4 h-4 mr-2" />
+          {state.label}
+        </Button>
+      );
+    }
+
+    const icons = {
+      retry: <RefreshCw className="w-4 h-4 mr-2" />,
+      autofix: <Wrench className="w-4 h-4 mr-2" />,
+      ignore: <XCircle className="w-4 h-4 mr-2" />,
+    };
+
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => handleRecoveryAction(threadId, actionType)}
+      >
+        {icons[actionType]}
+        {actionType === 'retry' ? 'Retry' : actionType === 'autofix' ? 'Auto-Fix' : 'Ignore'}
+      </Button>
+    );
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header Section */}
+    <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
-            Content Factory
-          </h1>
-          <p className="text-neutral-600 dark:text-neutral-400 mt-1">
-            Manage content workflows, approvals, and publishing pipelines
-          </p>
+          <h1 className="text-2xl font-bold text-neutral-900">Content Factory</h1>
+          <p className="text-neutral-500 mt-1">Manage content production, approval workflows, and publishing pipelines</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="success" className="text-sm">
-            Active
-          </Badge>
-          <Button variant="primary" size="sm">
-            + New Thread
-          </Button>
-        </div>
+        <Badge variant="success">Active</Badge>
       </div>
 
-      {/* Metrics Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricStat
-          label="Content Velocity"
-          value={`${contentFactoryMetrics.contentVelocity.current}/${contentFactoryMetrics.contentVelocity.target}`}
-          trend={contentFactoryMetrics.contentVelocity.trend}
-          description="Articles per week"
-        />
-        <MetricStat
-          label="Pending Approval"
-          value={contentFactoryMetrics.pendingApproval}
-          description="Items awaiting review"
-        />
-        <MetricStat
-          label="Articles Published"
-          value={contentFactoryMetrics.articlesPublished}
-          trend="up"
-          description="This quarter"
-        />
-        <MetricStat
-          label="Active Writers"
-          value={contentFactoryMetrics.activeWriters}
-          description="Agents working"
-        />
+      {/* Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {contentFactoryMetrics.map((metric) => (
+          <MetricStat
+            key={metric.id}
+            label={metric.label}
+            value={metric.value}
+            change={metric.change}
+            trend={metric.trend}
+          />
+        ))}
       </div>
 
-      {/* Quick Stats Bar */}
-      <Card className="p-4 bg-neutral-50 dark:bg-neutral-800/50">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-neutral-500" />
-              <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                Avg Review Time: <strong>{contentFactoryMetrics.avgReviewTime}</strong>
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                Total Threads: <strong>{contentThreads.length}</strong>
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-neutral-600 dark:text-neutral-400">Filter by:</span>
-            {['All', 'Blog', 'Email', 'Social'].map((filter) => (
-              <Badge key={filter} variant="neutral" className="cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-700">
-                {filter}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      </Card>
+      {/* Active Threads */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-neutral-900">Active Threads</h2>
+        <div className="grid grid-cols-1 gap-4">
+          {contentFactoryThreads.map((thread) => {
+            const selectedOptionId = selectedConflicts[thread.id];
+            const selectedOption = thread.conflict?.options.find((opt) => opt.id === selectedOptionId);
+            const hasConflict = thread.conflict !== undefined;
+            const hasError = thread.status === 'error';
 
-      {/* Active Threads Section */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-50">
-            Active Content Threads
-          </h2>
-          <Link href="#" className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400">
-            View all threads →
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-          {contentThreads.map((thread) => {
-            const ContentTypeIcon = contentTypeIcons[thread.contentType];
             return (
-              <Card key={thread.id} className="p-5 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
-                      <ContentTypeIcon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                    </div>
-                    <div>
-                      <Badge variant={statusColors[thread.status] || 'neutral'} className="text-xs">
+              <Card key={thread.id} className="p-5">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-base font-semibold text-neutral-900">{thread.title}</h3>
+                      <Badge
+                        variant={
+                          thread.status === 'active'
+                            ? 'success'
+                            : thread.status === 'error'
+                            ? 'danger'
+                            : 'neutral'
+                        }
+                      >
                         {thread.status}
                       </Badge>
+                      {hasConflict && (
+                        <Badge variant="warning">
+                          <AlertTriangle className="w-3 h-3 mr-1" />
+                          Conflict
+                        </Badge>
+                      )}
                     </div>
+                    <p className="text-sm text-neutral-500">{thread.objective}</p>
                   </div>
-                  <Badge variant={approvalStageColors[thread.approvalStage]} className="text-xs">
-                    {thread.approvalStage}
-                  </Badge>
+                  <Link href={`/workspaces/demo/modules/content-factory/${thread.id}`}>
+                    <Button variant="ghost" size="sm">
+                      View Details
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
                 </div>
 
-                <h3 className="font-semibold text-neutral-900 dark:text-neutral-50 mb-2">
-                  {thread.title}
-                </h3>
-
-                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4 line-clamp-2">
-                  {thread.objective}
-                </p>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-neutral-500 dark:text-neutral-500">
-                      Audience:
-                    </span>
-                    <span className="text-neutral-700 dark:text-neutral-300 font-medium">
-                      {thread.targetAudience}
-                    </span>
-                  </div>
-
-                  {thread.wordCount && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-neutral-500 dark:text-neutral-500">
-                        Word Count:
-                      </span>
-                      <span className="text-neutral-700 dark:text-neutral-300 font-medium">
-                        {thread.wordCount.toLocaleString()}
-                      </span>
+                {/* Conflict Resolution Section */}
+                {hasConflict && (
+                  <div className="mt-4 p-4 bg-warning-50 rounded-lg border border-warning-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <AlertTriangle className="w-4 h-4 text-warning-600" />
+                      <span className="text-sm font-medium text-warning-900">Conflict Detected</span>
                     </div>
-                  )}
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-neutral-500 dark:text-neutral-500">
-                      Due Date:
-                    </span>
-                    <span className="text-neutral-700 dark:text-neutral-300 font-medium">
-                      {new Date(thread.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
-                  <div className="flex items-center justify-between">
-                    {thread.assignedAgent && (
-                      <div className="flex items-center gap-2">
-                        <Avatar
-                          name={thread.assignedAgent.avatar}
-                          size="sm"
-                          className="w-6 h-6 text-xs"
-                        />
-                        <span className="text-xs text-neutral-600 dark:text-neutral-400">
-                          {thread.assignedAgent.name}
-                        </span>
+                    <p className="text-sm text-warning-800 mb-3">{thread.conflict.reason}</p>
+                    
+                    {selectedOption ? (
+                      <div className="bg-success-50 border border-success-200 rounded-md p-3">
+                        <div className="flex items-center gap-2 text-success-700">
+                          <CheckCircle className="w-4 h-4" />
+                          <span className="text-sm font-medium">Resolved: {selectedOption.agent}'s option selected</span>
+                        </div>
+                        <p className="text-xs text-success-600 mt-1">{selectedOption.outcome}</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {thread.conflict.options.map((option) => {
+                          const isSelected = selectedOptionId === option.id;
+                          return (
+                            <div
+                              key={option.id}
+                              className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${
+                                isSelected
+                                  ? 'bg-primary-50 border-primary-300'
+                                  : 'bg-white border-neutral-200 hover:border-neutral-300'
+                              }`}
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-sm font-medium text-neutral-900">{option.agent}</span>
+                                  {isSelected && (
+                                    <Badge variant="primary" size="sm">Selected</Badge>
+                                  )}
+                                </div>
+                                <p className="text-sm text-neutral-600">{option.description}</p>
+                              </div>
+                              <Button
+                                variant={isSelected ? 'primary' : 'outline'}
+                                size="sm"
+                                onClick={() => handleConflictApprove(thread.id, option.id)}
+                                disabled={isSelected}
+                              >
+                                {isSelected ? 'Approved' : 'Approve'}
+                              </Button>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
-                    <Link
-                      href={`/workspaces/${params.workspaceId}/modules/content-factory/${thread.id}`}
-                    >
-                      <Button variant="ghost" size="sm" className="text-xs">
-                        View Details <ArrowRight className="w-3 h-3 ml-1" />
-                      </Button>
-                    </Link>
                   </div>
-                </div>
+                )}
+
+                {/* Recovery Actions Section */}
+                {hasError && (
+                  <div className="mt-4 p-4 bg-danger-50 rounded-lg border border-danger-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <XCircle className="w-4 h-4 text-danger-600" />
+                      <span className="text-sm font-medium text-danger-900">Action Required</span>
+                    </div>
+                    <p className="text-sm text-danger-800 mb-3">{thread.errorMessage || 'An error occurred during processing.'}</p>
+                    <div className="flex items-center gap-2">
+                      {getRecoveryButton(thread.id, 'retry')}
+                      {getRecoveryButton(thread.id, 'autofix')}
+                      {getRecoveryButton(thread.id, 'ignore')}
+                    </div>
+                  </div>
+                )}
               </Card>
             );
           })}

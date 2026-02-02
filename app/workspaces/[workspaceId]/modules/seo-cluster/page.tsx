@@ -1,270 +1,259 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
-import { MetricStat } from '@/components/ui/MetricStat';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { ProgressBar } from '@/components/ui/ProgressBar';
-import { Avatar } from '@/components/ui/Avatar';
-import { 
-  mockSEOMetrics, 
-  mockSEOThreads, 
-  mockSEOAlerts,
-  seoClusterModuleInfo,
-  type SEOThread 
-} from '@/data/seoCluster';
-import { 
-  Activity, 
-  AlertTriangle, 
-  CheckCircle2, 
-  Clock, 
-  AlertCircle, 
-  ArrowUp, 
-  ArrowDown,
-  MoreHorizontal,
-  Search,
-  Filter
-} from 'lucide-react';
-import Link from 'next/link';
+import { MetricStat } from '@/components/ui/MetricStat';
+import { ArrowRight, AlertTriangle, CheckCircle, Clock, RefreshCw, Wrench, XCircle } from 'lucide-react';
+import { seoClusterThreads, seoClusterMetrics } from '@/data/seoCluster';
 
-const getStatusIcon = (status: SEOThread['status']) => {
-  switch (status) {
-    case 'active':
-      return <Activity className="h-4 w-4 text-primary" />;
-    case 'completed':
-      return <CheckCircle2 className="h-4 w-4 text-success" />;
-    case 'pending':
-      return <Clock className="h-4 w-4 text-warning" />;
-    case 'blocked':
-      return <AlertCircle className="h-4 w-4 text-danger" />;
-    default:
-      return <Clock className="h-4 w-4 text-neutral" />;
-  }
-};
+interface ConflictOption {
+  id: string;
+  agent: string;
+  description: string;
+  outcome: string;
+}
 
-const getPriorityColor = (priority: SEOThread['priority']) => {
-  switch (priority) {
-    case 'critical':
-      return 'bg-danger/10 text-danger border-danger/20';
-    case 'high':
-      return 'bg-orange-500/10 text-orange-600 border-orange-500/20';
-    case 'medium':
-      return 'bg-warning/10 text-warning border-warning/20';
-    case 'low':
-      return 'bg-neutral/10 text-neutral border-neutral/20';
-    default:
-      return 'bg-neutral/10 text-neutral border-neutral/20';
-  }
-};
+interface Conflict {
+  id: string;
+  reason: string;
+  options: ConflictOption[];
+}
 
-const getMetricStatusColor = (status: string) => {
-  switch (status) {
-    case 'healthy':
-      return 'text-success';
-    case 'warning':
-      return 'text-warning';
-    case 'critical':
-      return 'text-danger';
-    default:
-      return 'text-neutral';
-  }
-};
-
-const getAlertIcon = (type: string) => {
-  switch (type) {
-    case 'error':
-      return <AlertCircle className="h-4 w-4 text-danger" />;
-    case 'warning':
-      return <AlertTriangle className="h-4 w-4 text-warning" />;
-    case 'info':
-      return <Activity className="h-4 w-4 text-primary" />;
-    default:
-      return <Activity className="h-4 w-4 text-neutral" />;
-  }
-};
+interface RecoveryAction {
+  type: 'retry' | 'autofix' | 'ignore';
+  label: string;
+  status: 'idle' | 'loading' | 'success' | 'error';
+}
 
 export default function SEOClusterPage() {
+  const [selectedConflicts, setSelectedConflicts] = useState<Record<string, string>>({});
+  const [recoveryStates, setRecoveryStates] = useState<Record<string, RecoveryAction>>({});
+
+  const handleConflictApprove = (threadId: string, optionId: string) => {
+    setSelectedConflicts((prev) => ({
+      ...prev,
+      [threadId]: optionId,
+    }));
+  };
+
+  const handleRecoveryAction = async (threadId: string, actionType: 'retry' | 'autofix' | 'ignore') => {
+    // Set loading state
+    setRecoveryStates((prev) => ({
+      ...prev,
+      [threadId]: {
+        type: actionType,
+        label: actionType === 'retry' ? 'Retry' : actionType === 'autofix' ? 'Auto-Fix' : 'Ignore',
+        status: 'loading',
+      },
+    }));
+
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    // Set success state
+    setRecoveryStates((prev) => ({
+      ...prev,
+      [threadId]: {
+        type: actionType,
+        label: actionType === 'retry' ? 'Retried' : actionType === 'autofix' ? 'Fixed' : 'Ignored',
+        status: 'success',
+      },
+    }));
+
+    // Reset after 2 seconds
+    setTimeout(() => {
+      setRecoveryStates((prev) => {
+        const newState = { ...prev };
+        delete newState[threadId];
+        return newState;
+      });
+    }, 2000);
+  };
+
+  const getRecoveryButton = (threadId: string, actionType: 'retry' | 'autofix' | 'ignore') => {
+    const state = recoveryStates[threadId];
+    const isActive = state?.type === actionType;
+    
+    if (isActive && state.status === 'loading') {
+      return (
+        <Button variant="secondary" size="sm" disabled className="opacity-70">
+          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+          {state.label}...
+        </Button>
+      );
+    }
+
+    if (isActive && state.status === 'success') {
+      return (
+        <Button variant="success" size="sm" disabled>
+          <CheckCircle className="w-4 h-4 mr-2" />
+          {state.label}
+        </Button>
+      );
+    }
+
+    const icons = {
+      retry: <RefreshCw className="w-4 h-4 mr-2" />,
+      autofix: <Wrench className="w-4 h-4 mr-2" />,
+      ignore: <XCircle className="w-4 h-4 mr-2" />,
+    };
+
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => handleRecoveryAction(threadId, actionType)}
+      >
+        {icons[actionType]}
+        {actionType === 'retry' ? 'Retry' : actionType === 'autofix' ? 'Auto-Fix' : 'Ignore'}
+      </Button>
+    );
+  };
+
   return (
-    <div className="space-y-6 p-6">
-      {/* Header Section */}
+    <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-neutral-900">SEO Cluster</h1>
-          <p className="text-sm text-neutral-500 mt-1">Technical SEO operations and performance monitoring</p>
+          <h1 className="text-2xl font-bold text-neutral-900">SEO Cluster</h1>
+          <p className="text-neutral-500 mt-1">Monitor crawl health, indexing status, and technical SEO performance</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Badge variant="outline" className="flex items-center gap-1.5">
-            <Activity className="h-3 w-3" />
-            {seoClusterModuleInfo.activeThreadsCount} Active Threads
-          </Badge>
-          <Badge variant="outline" className="flex items-center gap-1.5">
-            <CheckCircle2 className="h-3 w-3 text-success" />
-            Health: {seoClusterModuleInfo.healthScore}%
-          </Badge>
-          <Button variant="default" size="sm">
-            + New Task
-          </Button>
-        </div>
+        <Badge variant="success">Active</Badge>
       </div>
 
-      {/* SEO Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {mockSEOMetrics.map((metric) => (
-          <Card key={metric.id} className="p-4">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <p className="text-sm text-neutral-500">{metric.label}</p>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <p className={`text-2xl font-semibold ${getMetricStatusColor(metric.status)}`}>
-                    {metric.value}
-                  </p>
-                  {metric.change && (
-                    <div className={`flex items-center gap-0.5 text-xs ${
-                      metric.trend === 'up' ? 'text-success' : 
-                      metric.trend === 'down' ? 'text-danger' : 'text-neutral'
-                    }`}>
-                      {metric.trend === 'up' && <ArrowUp className="h-3 w-3" />}
-                      {metric.trend === 'down' && <ArrowDown className="h-3 w-3" />}
-                      {metric.change}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4 text-neutral-400" />
-              </Button>
-            </div>
-          </Card>
+      {/* Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {seoClusterMetrics.map((metric) => (
+          <MetricStat
+            key={metric.id}
+            label={metric.label}
+            value={metric.value}
+            change={metric.change}
+            trend={metric.trend}
+          />
         ))}
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Active Threads Section - Spans 2 columns */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium text-neutral-900">Active Threads</h2>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="gap-2">
-                <Filter className="h-4 w-4" />
-                Filter
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Search className="h-4 w-4" />
-                Search
-              </Button>
-            </div>
-          </div>
+      {/* Active Threads */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-neutral-900">Active Threads</h2>
+        <div className="grid grid-cols-1 gap-4">
+          {seoClusterThreads.map((thread) => {
+            const selectedOptionId = selectedConflicts[thread.id];
+            const selectedOption = thread.conflict?.options.find((opt) => opt.id === selectedOptionId);
+            const hasConflict = thread.conflict !== undefined;
+            const hasError = thread.status === 'error';
 
-          <div className="space-y-3">
-            {mockSEOThreads.filter(thread => thread.status !== 'completed').map((thread) => (
-              <Link 
-                key={thread.id} 
-                href={`/workspaces/techstart/modules/seo-cluster/${thread.id}`}
-              >
-                <Card className="p-4 hover:border-primary/50 transition-colors cursor-pointer">
-                  <div className="flex items-start gap-4">
-                    <div className="mt-0.5">
-                      {getStatusIcon(thread.status)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-medium text-neutral-900">{thread.title}</h3>
-                            <Badge variant="outline" className={getPriorityColor(thread.priority)}>
-                              {thread.priority}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-neutral-500 mt-1 line-clamp-2">
-                            {thread.objective}
-                          </p>
-                        </div>
-                        <Badge variant="secondary" className="text-xs">
-                          {thread.status}
+            return (
+              <Card key={thread.id} className="p-5">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-base font-semibold text-neutral-900">{thread.title}</h3>
+                      <Badge
+                        variant={
+                          thread.status === 'active'
+                            ? 'success'
+                            : thread.status === 'error'
+                            ? 'danger'
+                            : 'neutral'
+                        }
+                      >
+                        {thread.status}
+                      </Badge>
+                      {hasConflict && (
+                        <Badge variant="warning">
+                          <AlertTriangle className="w-3 h-3 mr-1" />
+                          Conflict
                         </Badge>
-                      </div>
-                      <div className="flex items-center gap-4 mt-3">
-                        <div className="flex items-center gap-2 text-xs text-neutral-500">
-                          <Avatar size="xs" />
-                          <span>{thread.agent}</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-neutral-500">{thread.objective}</p>
+                  </div>
+                  <Link href={`/workspaces/demo/modules/seo-cluster/${thread.id}`}>
+                    <Button variant="ghost" size="sm">
+                      View Details
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </div>
+
+                {/* Conflict Resolution Section */}
+                {hasConflict && (
+                  <div className="mt-4 p-4 bg-warning-50 rounded-lg border border-warning-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <AlertTriangle className="w-4 h-4 text-warning-600" />
+                      <span className="text-sm font-medium text-warning-900">Conflict Detected</span>
+                    </div>
+                    <p className="text-sm text-warning-800 mb-3">{thread.conflict.reason}</p>
+                    
+                    {selectedOption ? (
+                      <div className="bg-success-50 border border-success-200 rounded-md p-3">
+                        <div className="flex items-center gap-2 text-success-700">
+                          <CheckCircle className="w-4 h-4" />
+                          <span className="text-sm font-medium">Resolved: {selectedOption.agent}'s option selected</span>
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-neutral-500">
-                          <Clock className="h-3 w-3" />
-                          <span>{thread.lastUpdated}</span>
-                        </div>
-                        <div className="flex-1" />
-                        <div className="text-xs text-neutral-500">{thread.progress}%</div>
+                        <p className="text-xs text-success-600 mt-1">{selectedOption.outcome}</p>
                       </div>
-                      <ProgressBar value={thread.progress} className="mt-2" />
+                    ) : (
+                      <div className="space-y-2">
+                        {thread.conflict.options.map((option) => {
+                          const isSelected = selectedOptionId === option.id;
+                          return (
+                            <div
+                              key={option.id}
+                              className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${
+                                isSelected
+                                  ? 'bg-primary-50 border-primary-300'
+                                  : 'bg-white border-neutral-200 hover:border-neutral-300'
+                              }`}
+                            >
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-sm font-medium text-neutral-900">{option.agent}</span>
+                                  {isSelected && (
+                                    <Badge variant="primary" size="sm">Selected</Badge>
+                                  )}
+                                </div>
+                                <p className="text-sm text-neutral-600">{option.description}</p>
+                              </div>
+                              <Button
+                                variant={isSelected ? 'primary' : 'outline'}
+                                size="sm"
+                                onClick={() => handleConflictApprove(thread.id, option.id)}
+                                disabled={isSelected}
+                              >
+                                {isSelected ? 'Approved' : 'Approve'}
+                              </Button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Recovery Actions Section */}
+                {hasError && (
+                  <div className="mt-4 p-4 bg-danger-50 rounded-lg border border-danger-200">
+                    <div className="flex items-center gap-2 mb-3">
+                      <XCircle className="w-4 h-4 text-danger-600" />
+                      <span className="text-sm font-medium text-danger-900">Action Required</span>
+                    </div>
+                    <p className="text-sm text-danger-800 mb-3">{thread.errorMessage || 'An error occurred during processing.'}</p>
+                    <div className="flex items-center gap-2">
+                      {getRecoveryButton(thread.id, 'retry')}
+                      {getRecoveryButton(thread.id, 'autofix')}
+                      {getRecoveryButton(thread.id, 'ignore')}
                     </div>
                   </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Alerts & Quick Actions Section */}
-        <div className="space-y-4">
-          {/* Alerts Card */}
-          <Card className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium text-neutral-900">Recent Alerts</h3>
-              <Badge variant="outline">{mockSEOAlerts.length}</Badge>
-            </div>
-            <div className="space-y-3">
-              {mockSEOAlerts.slice(0, 4).map((alert) => (
-                <div key={alert.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-neutral-50 transition-colors">
-                  {getAlertIcon(alert.type)}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-neutral-700 line-clamp-2">{alert.message}</p>
-                    <p className="text-xs text-neutral-400 mt-0.5">{alert.timestamp}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Button variant="outline" size="sm" className="w-full mt-4">
-              View All Alerts
-            </Button>
-          </Card>
-
-          {/* Quick Actions Card */}
-          <Card className="p-4">
-            <h3 className="font-medium text-neutral-900 mb-4">Quick Actions</h3>
-            <div className="space-y-2">
-              <Button variant="outline" size="sm" className="w-full justify-start gap-2">
-                <Search className="h-4 w-4" />
-                Run Site Audit
-              </Button>
-              <Button variant="outline" size="sm" className="w-full justify-start gap-2">
-                <Activity className="h-4 w-4" />
-                Check Crawl Status
-              </Button>
-              <Button variant="outline" size="sm" className="w-full justify-start gap-2">
-                <CheckCircle2 className="h-4 w-4" />
-                Submit Sitemap
-              </Button>
-              <Button variant="outline" size="sm" className="w-full justify-start gap-2">
-                <AlertTriangle className="h-4 w-4" />
-                Review 404 Errors
-              </Button>
-            </div>
-          </Card>
-
-          {/* Completed Threads Summary */}
-          <Card className="p-4">
-            <h3 className="font-medium text-neutral-900 mb-4">Completed Today</h3>
-            <div className="space-y-3">
-              {mockSEOThreads.filter(thread => thread.status === 'completed').map((thread) => (
-                <div key={thread.id} className="flex items-center gap-3">
-                  <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-neutral-700 truncate">{thread.title}</p>
-                    <p className="text-xs text-neutral-400">{thread.lastUpdated}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
+                )}
+              </Card>
+            );
+          })}
         </div>
       </div>
     </div>
