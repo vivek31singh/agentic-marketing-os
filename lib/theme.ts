@@ -1,33 +1,28 @@
+import type { Config } from "tailwindcss";
+
 /**
- * Design System Tokens
- * 
- * This file exports design tokens and a Tailwind theme configuration
- * that can be imported in tailwind.config.ts to apply consistent styling
- * across the application.
+ * Design Tokens for Agentic Marketing OS
+ * Centralized design system configuration
  */
 
-import { type Config } from 'tailwindcss';
-
-// ====================
 // Color Tokens
-// ====================
-
-const colors = {
-  // Primary brand color (blue/indigo based)
+export const colors = {
+  // Primary Brand Colors
   primary: {
-    50: '#eef2ff',
-    100: '#e0e7ff',
-    200: '#c7d2fe',
-    300: '#a5b4fc',
-    400: '#818cf8',
-    500: '#6366f1',
-    600: '#4f46e5',
-    700: '#4338ca',
-    800: '#3730a3',
-    900: '#312e81',
-    950: '#1e1b4b',
+    50: '#f0f9ff',
+    100: '#e0f2fe',
+    200: '#bae6fd',
+    300: '#7dd3fc',
+    400: '#38bdf8',
+    500: '#0ea5e9', // Main brand color
+    600: '#0284c7',
+    700: '#0369a1',
+    800: '#075985',
+    900: '#0c4a6e',
+    950: '#082f49',
   },
-  // Secondary brand color (purple/violet based)
+
+  // Secondary Brand Colors
   secondary: {
     50: '#faf5ff',
     100: '#f3e8ff',
@@ -41,21 +36,38 @@ const colors = {
     900: '#581c87',
     950: '#3b0764',
   },
-  // Success state color (emerald/green based)
-  success: {
-    50: '#ecfdf5',
-    100: '#d1fae5',
-    200: '#a7f3d0',
-    300: '#6ee7b7',
-    400: '#34d399',
-    500: '#10b981',
-    600: '#059669',
-    700: '#047857',
-    800: '#065f46',
-    900: '#064e3b',
-    950: '#022c22',
+
+  // Semantic Colors - Error (danger)
+  error: {
+    50: '#fef2f2',
+    100: '#fee2e2',
+    200: '#fecaca',
+    300: '#fca5a5',
+    400: '#f87171',
+    500: '#ef4444',
+    600: '#dc2626',
+    700: '#b91c1c',
+    800: '#991b1b',
+    900: '#7f1d1d',
+    950: '#450a0a',
   },
-  // Warning state color (amber based)
+
+  // Semantic Colors - Success
+  success: {
+    50: '#f0fdf4',
+    100: '#dcfce7',
+    200: '#bbf7d0',
+    300: '#86efac',
+    400: '#4ade80',
+    500: '#22c55e',
+    600: '#16a34a',
+    700: '#15803d',
+    800: '#166534',
+    900: '#14532d',
+    950: '#052e16',
+  },
+
+  // Semantic Colors - Warning
   warning: {
     50: '#fffbeb',
     100: '#fef3c7',
@@ -69,269 +81,158 @@ const colors = {
     900: '#78350f',
     950: '#451a03',
   },
-  // Danger/error state color (red based)
-  danger: {
-    50: '#fef2f2',
-    100: '#fee2e2',
-    200: '#fecaca',
-    300: '#fca5a5',
-    400: '#f87171',
-    500: '#ef4444',
-    600: '#dc2626',
-    700: '#b91c1c',
-    800: '#991b1b',
-    900: '#7f1d1d',
-    950: '#450a0a',
+
+  // Semantic Colors - Info
+  info: {
+    50: '#eff6ff',
+    100: '#dbeafe',
+    200: '#bfdbfe',
+    300: '#93c5fd',
+    400: '#60a5fa',
+    500: '#3b82f6',
+    600: '#2563eb',
+    700: '#1d4ed8',
+    800: '#1e40af',
+    900: '#1e3a8a',
+    950: '#172554',
   },
-  // Neutral/slate palette for backgrounds, text, borders
+
+  // Neutral Colors
   neutral: {
-    50: '#f8fafc',
-    100: '#f1f5f9',
-    200: '#e2e8f0',
-    300: '#cbd5e1',
-    400: '#94a3b8',
-    500: '#64748b',
-    600: '#475569',
-    700: '#334155',
-    800: '#1e293b',
-    900: '#0f172a',
-    950: '#020617',
+    50: '#fafafa',
+    100: '#f5f5f5',
+    200: '#e5e5e5',
+    300: '#d4d4d4',
+    400: '#a3a3a3',
+    500: '#737373',
+    600: '#525252',
+    700: '#404040',
+    800: '#262626',
+    900: '#171717',
+    950: '#0a0a0a',
   },
-  // Discord-like dark backgrounds
-  discord: {
-    dark: '#1e1f22',
-    darker: '#111214',
-    light: '#2b2d31',
-    lighter: '#383a40',
+
+  // Dark mode backgrounds
+  background: {
+    DEFAULT: '#0a0a0a',
+    surface: '#171717',
+    elevated: '#262626',
+  },
+
+  // Text colors
+  text: {
+    DEFAULT: '#fafafa',
+    muted: '#a3a3a3',
+    inverted: '#0a0a0a',
+  },
+
+  // Border colors
+  border: {
+    DEFAULT: '#262626',
+    muted: '#404040',
   },
 };
 
-// ====================
+// Spacing Tokens
+export const spacing = {
+  xs: '0.25rem',
+  sm: '0.5rem',
+  md: '1rem',
+  lg: '1.5rem',
+  xl: '2rem',
+  '2xl': '3rem',
+  '3xl': '4rem',
+  '4xl': '6rem',
+};
+
 // Typography Tokens
-// ====================
-
-const fontFamily = {
-  sans: [
-    'var(--font-inter)',
-    '-apple-system',
-    'BlinkMacSystemFont',
-    'Segoe UI',
-    'Roboto',
-    'Helvetica Neue',
-    'Arial',
-    'sans-serif',
-  ],
-  mono: [
-    'var(--font-jetbrains-mono)',
-    'ui-monospace',
-    'SFMono-Regular',
-    'Menlo',
-    'Monaco',
-    'Consolas',
-    'monospace',
-  ],
+export const fontSize = {
+  xs: ['0.75rem', { lineHeight: '1rem' }],
+  sm: ['0.875rem', { lineHeight: '1.25rem' }],
+  base: ['1rem', { lineHeight: '1.5rem' }],
+  lg: ['1.125rem', { lineHeight: '1.75rem' }],
+  xl: ['1.25rem', { lineHeight: '1.75rem' }],
+  '2xl': ['1.5rem', { lineHeight: '2rem' }],
+  '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+  '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
+  '5xl': ['3rem', { lineHeight: '1' }],
+  '6xl': ['3.75rem', { lineHeight: '1' }],
 };
 
-const fontSize = {
-  xs: ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.025em' }],
-  sm: ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0.025em' }],
-  base: ['1rem', { lineHeight: '1.5rem', letterSpacing: '0em' }],
-  lg: ['1.125rem', { lineHeight: '1.75rem', letterSpacing: '-0.025em' }],
-  xl: ['1.25rem', { lineHeight: '1.75rem', letterSpacing: '-0.025em' }],
-  '2xl': ['1.5rem', { lineHeight: '2rem', letterSpacing: '-0.025em' }],
-  '3xl': ['1.875rem', { lineHeight: '2.25rem', letterSpacing: '-0.025em' }],
-  '4xl': ['2.25rem', { lineHeight: '2.5rem', letterSpacing: '-0.025em' }],
-};
-
-const fontWeight = {
-  light: '300',
+export const fontWeight = {
   normal: '400',
   medium: '500',
   semibold: '600',
   bold: '700',
 };
 
-// ====================
-// Spacing Tokens
-// ====================
-
-const spacing = {
-  0: '0',
-  1: '0.25rem',   // 4px
-  2: '0.5rem',    // 8px
-  3: '0.75rem',   // 12px
-  4: '1rem',      // 16px
-  5: '1.25rem',   // 20px
-  6: '1.5rem',    // 24px
-  8: '2rem',      // 32px
-  10: '2.5rem',   // 40px
-  12: '3rem',     // 48px
-  16: '4rem',     // 64px
-  20: '5rem',     // 80px
-  24: '6rem',     // 96px
-  32: '8rem',     // 128px
-  40: '10rem',    // 160px
-  48: '12rem',    // 192px
-  56: '14rem',    // 224px
-  64: '16rem',    // 256px
-};
-
-// ====================
 // Border Radius Tokens
-// ====================
-
-const borderRadius = {
+export const borderRadius = {
   none: '0',
-  sm: '0.125rem',   // 2px
-  DEFAULT: '0.25rem', // 4px
-  md: '0.375rem',   // 6px
-  lg: '0.5rem',     // 8px
-  xl: '0.75rem',    // 12px
-  '2xl': '1rem',    // 16px
-  '3xl': '1.5rem',  // 24px
+  sm: '0.25rem',
+  DEFAULT: '0.375rem',
+  md: '0.5rem',
+  lg: '0.75rem',
+  xl: '1rem',
+  '2xl': '1.5rem',
   full: '9999px',
 };
 
-// ====================
 // Shadow Tokens
-// ====================
-
-const boxShadow = {
-  xs: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-  sm: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+export const boxShadow = {
+  sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
   DEFAULT: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
   md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
   lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
   xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
   '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
   inner: 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
-  glow: '0 0 20px rgb(99 102 241 / 0.5)',
+  glow: '0 0 20px rgb(14 165 233 / 0.3)',
 };
 
-// ====================
 // Animation Tokens
-// ====================
-
-const animation = {
+export const animation = {
   'fade-in': 'fadeIn 0.2s ease-in-out',
-  'fade-out': 'fadeOut 0.2s ease-in-out',
-  'slide-in-from-top': 'slideInFromTop 0.3s ease-out',
-  'slide-in-from-bottom': 'slideInFromBottom 0.3s ease-out',
-  'slide-in-from-left': 'slideInFromLeft 0.3s ease-out',
-  'slide-in-from-right': 'slideInFromRight 0.3s ease-out',
-  'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-  'spin-slow': 'spin 3s linear infinite',
+  'slide-in': 'slideIn 0.3s ease-out',
+  'slide-out': 'slideOut 0.3s ease-in',
+  'scale-in': 'scaleIn 0.2s ease-out',
+  'bounce-slight': 'bounceSlight 0.3s ease-in-out',
 };
 
-const keyframes = {
+export const keyframes = {
   fadeIn: {
     '0%': { opacity: '0' },
     '100%': { opacity: '1' },
   },
-  fadeOut: {
-    '0%': { opacity: '1' },
-    '100%': { opacity: '0' },
-  },
-  slideInFromTop: {
-    '0%': { transform: 'translateY(-100%)', opacity: '0' },
+  slideIn: {
+    '0%': { transform: 'translateY(-10px)', opacity: '0' },
     '100%': { transform: 'translateY(0)', opacity: '1' },
   },
-  slideInFromBottom: {
-    '0%': { transform: 'translateY(100%)', opacity: '0' },
-    '100%': { transform: 'translateY(0)', opacity: '1' },
+  slideOut: {
+    '0%': { transform: 'translateY(0)', opacity: '1' },
+    '100%': { transform: 'translateY(-10px)', opacity: '0' },
   },
-  slideInFromLeft: {
-    '0%': { transform: 'translateX(-100%)', opacity: '0' },
-    '100%': { transform: 'translateX(0)', opacity: '1' },
+  scaleIn: {
+    '0%': { transform: 'scale(0.95)', opacity: '0' },
+    '100%': { transform: 'scale(1)', opacity: '1' },
   },
-  slideInFromRight: {
-    '0%': { transform: 'translateX(100%)', opacity: '0' },
-    '100%': { transform: 'translateX(0)', opacity: '1' },
+  bounceSlight: {
+    '0%, 100%': { transform: 'translateY(0)' },
+    '50%': { transform: 'translateY(-4px)' },
   },
 };
 
-// ====================
-// Extend Theme
-// ====================
-
-const extend = {
+// Export complete theme object for Tailwind config
+export const theme = {
   colors,
-  fontFamily,
+  spacing,
   fontSize,
   fontWeight,
-  spacing,
-  borderRadius,
-  boxShadow,
-  animation,
-  keyframes,
-  // Additional custom properties
-  backgroundImage: {
-    'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-    'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-  },
-  transitionProperty: {
-    'height': 'height',
-    'spacing': 'margin, padding',
-  },
-};
-
-// ====================
-// Tailwind Theme Config
-// ====================
-/**
- * Exported Tailwind theme configuration
- * Import this in tailwind.config.ts to apply design tokens
- * 
- * Example usage in tailwind.config.ts:
- * ```ts
- * import type { Config } from 'tailwindcss'
- * import { tailwindThemeConfig } from '@/lib/theme'
- * 
- * const config: Config = {
- *   content: [...],
- *   theme: {
- *     extend: tailwindThemeConfig
- *   },
- *   plugins: [...]
- * }
- * ```
- */
-export const tailwindThemeConfig = {
-  extend,
-};
-
-// ====================
-// Individual Token Exports
-// ====================
-/**
- * Individual design token exports for use in components
- * e.g., `colors.primary[500]` or `spacing[4]`
- */
-export const designTokens = {
-  colors,
-  fontFamily,
-  fontSize,
-  fontWeight,
-  spacing,
   borderRadius,
   boxShadow,
   animation,
   keyframes,
 };
 
-// Re-export commonly used tokens for convenience
-export const {
-  colors: themeColors,
-  fontFamily: themeFontFamily,
-  fontSize: themeFontSize,
-  fontWeight: themeFontWeight,
-  spacing: themeSpacing,
-  borderRadius: themeBorderRadius,
-  boxShadow: themeBoxShadow,
-} = designTokens;
-
-// Type exports for TypeScript
-export type ThemeColors = typeof colors;
-export type ThemeSpacing = typeof spacing;
-export type ThemeBorderRadius = typeof borderRadius;
-export type ThemeBoxShadow = typeof boxShadow;
+// Export type for use in components
+export type Theme = typeof theme;
