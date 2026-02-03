@@ -1,91 +1,77 @@
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { KanbanCard } from './KanbanCard';
-import { DomainHealthChips } from './DomainHealthChips';
+import { cn } from "@/lib/utils";
 
-interface Column {
+export interface KanbanColumn {
   id: string;
   title: string;
   status: string;
   count: number;
-  color: string;
+}
+
+export interface KanbanItem {
+  id: string;
+  title: string;
+  domain: string;
+  priority: "high" | "medium" | "low";
+  status: string;
 }
 
 interface KanbanBoardProps {
-  columns: Column[];
-  cards: any[];
-  domains: any[];
+  columns: KanbanColumn[];
+  items: KanbanItem[];
 }
 
-export function KanbanBoard({ columns, cards, domains }: KanbanBoardProps) {
-  const columnColors = {
-    inbox: 'border-slate-300 bg-slate-50/50',
-    'in-progress': 'border-blue-300 bg-blue-50/30',
-    review: 'border-amber-300 bg-amber-50/30',
-    blocked: 'border-rose-300 bg-rose-50/30',
-    done: 'border-emerald-300 bg-emerald-50/30',
-  };
-
+export function KanbanBoard({ columns, items }: KanbanBoardProps) {
   return (
-    <div className="flex gap-4 h-[calc(100vh-320px)] min-h-0">
+    <div className="flex gap-4 overflow-x-auto pb-4">
       {columns.map((column) => {
-        const columnCards = cards.filter((card) => card.status === column.status);
-        
+        const columnItems = items.filter((item) => item.status === column.id);
         return (
           <div
             key={column.id}
             className={cn(
-              "flex-1 min-w-[280px] max-w-[350px] flex flex-col rounded-xl border-2",
-              columnColors[column.id as keyof typeof columnColors]
+              "flex-shrink-0 w-80 bg-white rounded-lg border border-slate-200 p-4"
             )}
           >
-            <div className="px-4 py-3 border-b border-slate-200/60">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-slate-800">{column.title}</h3>
-                <span className="text-xs font-medium px-2 py-0.5 bg-white rounded-full border border-slate-200 text-slate-600">
-                  {column.count}
-                </span>
-              </div>
-              {column.id === 'inbox' && (
-                <DomainHealthChips domains={domains} />
-              )}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-slate-800">{column.title}</h3>
+              <span className={cn(
+                "px-2 py-1 text-xs font-medium rounded-full",
+                column.id === "inbox" && "bg-slate-100 text-slate-600",
+                column.id === "in-progress" && "bg-blue-50 text-blue-600",
+                column.id === "review" && "bg-amber-50 text-amber-600",
+                column.id === "blocked" && "bg-rose-50 text-rose-600",
+                column.id === "done" && "bg-emerald-50 text-emerald-600"
+              )}>
+                {column.count}
+              </span>
             </div>
-            
-            <div className="flex-1 overflow-y-auto p-3 space-y-3">
-              {columnCards.map((card) => (
-                <KanbanCard
-                  key={card.id}
-                  id={card.id}
-                  title={card.title}
-                  domain={card.domain}
-                  status={card.status}
-                  priority={card.priority}
-                  agent={card.agent}
-                  eventsCount={card.eventsCount}
-                  attachmentsCount={card.attachmentsCount}
-                />
+            <div className="space-y-3">
+              {columnItems.map((item) => (
+                <KanbanCard key={item.id} item={item} />
               ))}
-              
-              {columnCards.length === 0 && (
-                <div className="flex items-center justify-center h-24 border-2 border-dashed border-slate-200 rounded-lg">
-                  <p className="text-xs text-slate-400">No cards</p>
-                </div>
-              )}
-            </div>
-            
-            <div className="p-3 border-t border-slate-200/60">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start text-slate-500 hover:text-slate-700 hover:bg-slate-100"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Card
-              </Button>
             </div>
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function KanbanCard({ item }: { item: KanbanItem }) {
+  return (
+    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer">
+      <div className="flex items-start justify-between mb-2">
+        <span className={cn(
+          "px-2 py-0.5 text-xs font-medium rounded",
+          item.priority === "high" && "bg-rose-100 text-rose-700",
+          item.priority === "medium" && "bg-amber-100 text-amber-700",
+          item.priority === "low" && "bg-slate-100 text-slate-600"
+        )}>
+          {item.priority}
+        </span>
+        <span className="text-xs text-slate-400">{item.domain}</span>
+      </div>
+      <p className="text-sm font-medium text-slate-800">{item.title}</p>
     </div>
   );
 }
