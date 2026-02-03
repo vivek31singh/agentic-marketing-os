@@ -8,8 +8,11 @@ app/
   workspaces/
     [workspaceId]/
       layout.tsx (Shell - LeftNav, TopBar, RightRail)
+      loading.tsx (Loading Boundary - Skeletons)
+      error.tsx (Error Boundary - EmptyState)
       page.tsx (Mission Control)
       mission-control/
+        loading.tsx
         page.tsx
       modules/
         [moduleSlug]/
@@ -27,7 +30,7 @@ app/
       settings/
         page.tsx
 components/
-  ui/ (Primitives: Button, Card, Badge, Avatar, ProgressBar, Tag, MetricStat, Accordion, SegmentedControl, Modal)
+  ui/ (Primitives: Button, Card, Badge, Avatar, ProgressBar, Tag, MetricStat, Accordion, SegmentedControl, Modal, Skeleton, EmptyState)
   layout/ (Shell parts: Sidebar, Topbar)
   domains/ (Feature specific: AgentScorecard, ConflictPanel, Timeline)
   providers/
@@ -62,7 +65,8 @@ Files: PascalCase for components (e.g., `AgentScorecard.tsx`), camelCase for uti
 Visual Testing: Ensure pages match reference designs manually. Unit Testing: Test logic for conflict resolution and state changes using Jest/React Testing Library. E2E Testing: Use Playwright to verify critical paths (Navigation to modules, clicking 'Approve' buttons).
 
 ## Error Handling
-UI Skeletons during 'loading' states. Empty State components when data is missing. Error Boundary components to catch runtime errors. Try-catch blocks in mock API functions to simulate error scenarios (e.g., 'ERR_TIMEOUT_LLM').
+- **Loading States:** UI Skeletons during 'loading' states. Implemented via Next.js `loading.tsx` files which utilize the `Skeleton` component to mimic the structure of the page being loaded (e.g., MetricStats, Cards, Sidebars).
+- **Error States:** Empty State components when data is missing or runtime errors occur. Implemented via Next.js `error.tsx` files utilizing the `EmptyState` component to provide user-friendly feedback and recovery actions.
 
 ## Dependencies
 next: latest, react: latest, react-dom: latest, typescript: latest, tailwindcss: latest, lucide-react: latest, clsx: latest, tailwind-merge: latest, framer-motion: latest (for smooth animations), class-variance-authority: latest.
@@ -73,3 +77,5 @@ next: latest, react: latest, react-dom: latest, typescript: latest, tailwindcss:
 - tsconfig. (path aliases, strict mode)
 - .eslintrc. (airbnb or standard next rules)
 
+
+---
