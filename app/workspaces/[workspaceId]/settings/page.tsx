@@ -1,204 +1,207 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import React, { useEffect, useState } from 'react';
+import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { getWorkspaceSettings, updateWorkspaceSettings } from '@/lib/apiMock';
-import { Save, CheckCircle2, AlertTriangle } from 'lucide-react';
-import { useParams } from 'next/navigation';
+import { Badge } from '@/components/ui/Badge';
+import { Input } from '@/components/ui/Input';
+import { getWorkspace } from '@/lib/apiMock';
+import { Settings as SettingsIcon, Save, ExternalLink, Shield, Zap, AlertCircle } from 'lucide-react';
 
-export default function WorkspaceSettingsPage() {
-  const params = useParams();
-  const [settings, setSettings] = useState<any>(null);
+interface SettingsPageProps {
+  workspaceId: string;
+}
+
+export default function SettingsPage({ workspaceId }: SettingsPageProps) {
   const [loading, setLoading] = useState(true);
+  const [workspace, setWorkspace] = useState<any>(null);
   const [saving, setSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'general' | 'integrations' | 'guardrails'>('general');
 
   useEffect(() => {
-    async function loadSettings() {
+    async function fetchWorkspace() {
       try {
         setLoading(true);
-        const data = await getWorkspaceSettings(params.workspaceId as string);
-        setSettings(data);
+        const data = await getWorkspace(workspaceId);
+        setWorkspace(data);
       } catch (err) {
-        console.error('Failed to load settings:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load settings');
       } finally {
         setLoading(false);
       }
     }
-    loadSettings();
-  }, [params.workspaceId]);
+    fetchWorkspace();
+  }, [workspaceId]);
 
   const handleSave = async () => {
     setSaving(true);
-    setSaveStatus('idle');
-    try {
-      await updateWorkspaceSettings(params.workspaceId as string, settings);
-      setSaveStatus('success');
-      setTimeout(() => setSaveStatus('idle'), 2000);
-    } catch (err) {
-      setSaveStatus('error');
-    } finally {
-      setSaving(false);
-    }
+    // Simulate save
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setSaving(false);
   };
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="h-8 bg-neutral-200 rounded w-1/3 animate-pulse" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="h-64 bg-neutral-100 rounded animate-pulse" />
-          ))}
-        </div>
+      <div className="p-6 space-y-6">
+        <div className="h-16 bg-muted animate-pulse rounded" />
+        <div className="h-64 bg-muted animate-pulse rounded" />
       </div>
     );
   }
 
-  if (!settings) {
+  if (error || !workspace) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-error mx-auto mb-4" />
-          <p className="text-neutral-600">Failed to load settings</p>
-        </div>
+      <div className="p-6">
+        <Card className="p-8 text-center">
+          <AlertCircle className="h-12 w-12 text-error mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Failed to load settings</h3>
+          <p className="text-muted-foreground mb-4">{error || 'Unknown error occurred'}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-neutral-900">Workspace Settings</h1>
-          <p className="text-neutral-600 mt-1">Manage your workspace configuration</p>
+        <div className="flex items-center gap-3">
+          <SettingsIcon className="h-6 w-6 text-muted-foreground" />
+          <div>
+            <h1 className="text-2xl font-bold">Workspace Settings</h1>
+            <p className="text-muted-foreground">Configure your workspace preferences</p>
+          </div>
         </div>
-        <div className="flex gap-2">
-          {saveStatus === 'success' && (
-            <Badge variant="success" withDot>
-              <CheckCircle2 className="w-3 h-3 mr-1" />
-              Saved
-            </Badge>
-          )}
-          <Button onClick={handleSave} disabled={saving}>
-            <Save className="w-4 h-4 mr-2" />
-            {saving ? 'Saving...' : 'Save Changes'}
-          </Button>
-        </div>
+        <Button onClick={handleSave} disabled={saving}>
+          {saving ? 'Saving...' : 'Save Changes'}
+        </Button>
       </div>
 
-      {/* Settings Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* General Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>General Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-neutral-700">Workspace Name</label>
-              <input
-                type="text"
-                value={settings.general.name}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  general: { ...settings.general, name: e.target.value }
-                })}
-                className="mt-1 w-full px-3 py-2 border border-neutral-300 rounded-md text-sm"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-neutral-700">Status</label>
-              <select
-                value={settings.general.status}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  general: { ...settings.general, status: e.target.value }
-                })}
-                className="mt-1 w-full px-3 py-2 border border-neutral-300 rounded-md text-sm"
-              >
-                <option value="active">Active</option>
-                <option value="idle">Idle</option>
-                <option value="error">Error</option>
-              </select>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Tabs */}
+      <div className="flex gap-2 border-b border-border">
+        <button
+          onClick={() => setActiveTab('general')}
+          className={`px-4 py-2 border-b-2 transition-colors ${
+            activeTab === 'general'
+              ? 'border-primary text-foreground font-medium'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          General
+        </button>
+        <button
+          onClick={() => setActiveTab('integrations')}
+          className={`px-4 py-2 border-b-2 transition-colors ${
+            activeTab === 'integrations'
+              ? 'border-primary text-foreground font-medium'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          Integrations
+        </button>
+        <button
+          onClick={() => setActiveTab('guardrails')}
+          className={`px-4 py-2 border-b-2 transition-colors ${
+            activeTab === 'guardrails'
+              ? 'border-primary text-foreground font-medium'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          Guardrails
+        </button>
+      </div>
 
-        {/* Integrations */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Integrations</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {settings.integrations.map((integration: any) => (
-              <div key={integration.id} className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg">
-                <div>
-                  <p className="font-medium text-sm">{integration.name}</p>
-                  <p className="text-xs text-neutral-500">{integration.status}</p>
+      {/* Tab Content */}
+      {activeTab === 'general' && (
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold mb-4">General Information</h2>
+          <div className="space-y-4 max-w-md">
+            <div>
+              <label className="block text-sm font-medium mb-1">Workspace Name</label>
+              <Input defaultValue={workspace.name} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Status</label>
+              <Badge variant={workspace.status === 'active' ? 'success' : 'warning'}>
+                {workspace.status}
+              </Badge>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Workspace ID</label>
+              <Input value={workspace.id} disabled />
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {activeTab === 'integrations' && (
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold mb-4">Connected Services</h2>
+          <div className="space-y-4">
+            {[
+              { name: 'OpenAI', status: 'connected', icon: '🤖' },
+              { name: 'Slack', status: 'connected', icon: '💬' },
+              { name: 'Google Analytics', status: 'disconnected', icon: '📊' },
+            ].map((service) => (
+              <div
+                key={service.name}
+                className="flex items-center justify-between p-4 border border-border rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{service.icon}</span>
+                  <div>
+                    <h3 className="font-medium">{service.name}</h3>
+                    <Badge variant={service.status === 'connected' ? 'success' : 'secondary'}>
+                      {service.status}
+                    </Badge>
+                  </div>
                 </div>
-                <Badge variant={integration.status === 'Connected' ? 'success' : 'neutral'} size="sm">
-                  {integration.status}
-                </Badge>
+                <Button variant="outline" size="sm">
+                  {service.status === 'connected' ? 'Configure' : 'Connect'}
+                </Button>
               </div>
             ))}
-            <Button variant="outline" size="sm" className="w-full">
-              Add Integration
-            </Button>
-          </CardContent>
+          </div>
         </Card>
+      )}
 
-        {/* Guardrails */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Guardrails</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+      {activeTab === 'guardrails' && (
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold mb-4">Safety & Budget Limits</h2>
+          <div className="space-y-6 max-w-md">
             <div>
-              <label className="text-sm font-medium text-neutral-700">Budget Limit ($)</label>
-              <input
-                type="number"
-                value={settings.guardrails.budgetLimit}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  guardrails: { ...settings.guardrails, budgetLimit: parseInt(e.target.value) }
-                })}
-                className="mt-1 w-full px-3 py-2 border border-neutral-300 rounded-md text-sm"
-              />
+              <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Monthly Budget Limit ($)
+              </label>
+              <Input type="number" defaultValue="5000" />
+              <p className="text-xs text-muted-foreground mt-1">
+                Maximum spend per month on AI operations
+              </p>
             </div>
             <div>
-              <label className="text-sm font-medium text-neutral-700">Approval Threshold</label>
-              <select
-                value={settings.guardrails.approvalThreshold}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  guardrails: { ...settings.guardrails, approvalThreshold: e.target.value }
-                })}
-                className="mt-1 w-full px-3 py-2 border border-neutral-300 rounded-md text-sm"
-              >
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
+              <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+                <Zap className="h-4 w-4" />
+                Approval Threshold
+              </label>
+              <Input type="number" defaultValue="100" />
+              <p className="text-xs text-muted-foreground mt-1">
+                Actions above this cost require manual approval
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Content Safety Level</label>
+              <select className="w-full px-3 py-2 border border-border rounded-md bg-background">
+                <option>Strict</option>
+                <option selected>Moderate</option>
+                <option>Permissive</option>
               </select>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-neutral-700">Auto-Approve Low Risk</span>
-              <input
-                type="checkbox"
-                checked={settings.guardrails.autoApproveLowRisk}
-                onChange={(e) => setSettings({
-                  ...settings,
-                  guardrails: { ...settings.guardrails, autoApproveLowRisk: e.target.checked }
-                })}
-                className="w-4 h-4 text-primary-600 border-neutral-300 rounded"
-              />
-            </div>
-          </CardContent>
+          </div>
         </Card>
-      </div>
+      )}
     </div>
   );
 }

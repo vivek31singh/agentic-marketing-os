@@ -1,229 +1,223 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { getThread, postCommand } from '@/lib/apiMock';
 import { ThreadTimeline } from '@/components/domains/ThreadTimeline';
 import { ConflictPanel } from '@/components/domains/ConflictPanel';
-import { Send, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import type { Thread, Event } from '@/data/mockData';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { getThread, postCommand } from '@/lib/apiMock';
+import { ArrowLeft, Send, AlertCircle, Eye, Code, Bug } from 'lucide-react';
+import Link from 'next/link';
+
+type ViewMode = 'standard' | 'logic' | 'debug';
 
 export default function ThreadDetailPage() {
   const params = useParams();
-  const router = useRouter();
-  const [thread, setThread] = useState<Thread | null>(null);
+  const workspaceId = params.workspaceId as string;
+  const moduleSlug = params.moduleSlug as string;
+  const threadSlug = params.threadSlug as string;
+
+  const [thread, setThread] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [commandInput, setCommandInput] = useState('');
-  const [sending, setSending] = useState(false);
-  const [viewMode, setViewMode] = useState<'standard' | 'logic' | 'debug'>('standard');
+  const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('standard');
+  const [commandInput, setCommandInput] = useState('');;
+  const [sendingCommand, setSendingCommand] = useState(false);
 
   // Conflict resolution state
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
-  const [resolving, setResolving] = useState(false);
+  const [resolvedConflict, setResolvedConflict] = useState(false);
 
   useEffect(() => {
-    async function loadThread() {
+    async function fetchThread() {
       try {
         setLoading(true);
-        const threadData = await getThread(params.threadSlug as string);
-        setThread(threadData);
+        const data = await getThread(threadSlug);
+        setThread(data);
       } catch (err) {
-        console.error('Failed to load thread:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load thread');
       } finally {
         setLoading(false);
       }
     }
-    loadThread();
-  }, [params.threadSlug]);
+    fetchThread();
+  }, [threadSlug]);
 
   const handleSendCommand = async () => {
-    if (!commandInput.trim() || !thread) return;
-
-    setSending(true);
+    if (!commandInput.trim()) return;
+    
     try {
-      const newEvent = await postCommand(thread.id, commandInput);
-      setThread({
-        ...thread,
-        events: [...thread.events, newEvent]
-      });
+      setSendingCommand(true);
+      const updatedThread = await postCommand(threadSlug, commandInput);
+      setThread(updatedThread);
       setCommandInput('');
     } catch (err) {
       console.error('Failed to send command:', err);
     } finally {
-      setSending(false);
+      setSendingCommand(false);
     }
   };
 
-  const handleResolveConflict = async (optionId: string) => {
+  const handleApproveOption = (optionId: string) => {
     setSelectedOptionId(optionId);
-    setResolving(true);
-
-    // Simulate API call
     setTimeout(() => {
-      if (thread) {
-        const updatedEvents = thread.events.map(event => {
-          if (event.type === 'conflict' && event.conflict) {
-            return {
-              ...event,
-              meta: { ...event.meta, resolved: true, resolution: optionId }
-            };
-          }
-          return event;
-        });
-        setThread({ ...thread, events: updatedEvents });
-      }
-      setResolving(false);
-      setSelectedOptionId(null);
-    }, 1500);
+      setResolvedConflict(true);
+    }, 500);
   };
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="h-8 bg-neutral-200 rounded w-1/2 animate-pulse" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-4">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-32 bg-neutral-100 rounded animate-pulse" />
-            ))}
+      <div className="p-6 space-y-6">
+        <div className="h-16 bg-muted animate-pulse rounded" />
+        <div className="grid grid-cols-3 gap-6">
+          <div className="col-span-2 space-y-4">
+            <div className="h-32 bg-muted animate-pulse rounded" />
+            <div className="h-64 bg-muted animate-pulse rounded" />
           </div>
-          <div className="h-64 bg-neutral-100 rounded animate-pulse" />
+          <div className="h-80 bg-muted animate-pulse rounded" />
         </div>
       </div>
     );
   }
 
-  if (!thread) {
+  if (error || !thread) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <p className="text-neutral-600">Thread not found</p>
-          <Link href={`/workspaces/${params.workspaceId}/mission-control`}>
-            <Button className="mt-4">Return to Mission Control</Button>
-          </Link>
-        </div>
+      <div className="p-6">
+        <Card className="p-8 text-center">
+          <AlertCircle className="h-12 w-12 text-error mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Failed to load thread</h3>
+          <p className="text-muted-foreground mb-4">{error || 'Unknown error occurred'}</p>
+          <div className="flex gap-2 justify-center">
+            <Link href={`/workspaces/${workspaceId}/modules/${moduleSlug}`}>
+              <Button variant="outline">Back to Module</Button>
+            </Link>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+          </div>
+        </Card>
       </div>
     );
   }
 
-  const conflictEvent = thread.events.find(e => e.type === 'conflict');
-  const isResolved = conflictEvent?.meta?.resolved;
+  const activeConflict = thread.conflicts?.[0];
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href={`/workspaces/${params.workspaceId}/mission-control`}>
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="w-4 h-4" />
+          <Link href={`/workspaces/${workspaceId}/modules/${moduleSlug}`}>
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-neutral-900">{thread.title}</h1>
-              {isResolved && (
-                <Badge variant="success" size="sm" withDot>
-                  <CheckCircle2 className="w-3 h-3 mr-1" />
-                  Resolved
-                </Badge>
-              )}
-            </div>
-            <p className="text-neutral-600 text-sm mt-1">{thread.objective}</p>
+            <h1 className="text-2xl font-bold mb-1">{thread.title}</h1>
+            <p className="text-muted-foreground text-sm">{thread.objective}</p>
           </div>
         </div>
-        <SegmentedControl
-          options={[
-            { value: 'standard', label: 'Standard' },
-            { value: 'logic', label: 'Logic' },
-            { value: 'debug', label: 'Debug' }
-          ]}
-          value={viewMode}
-          onChange={(value) => setViewMode(value as any)}
-        />
+        <div className="flex items-center gap-3">
+          <SegmentedControl
+            options={[
+              { value: 'standard', label: 'Standard', icon: <Eye className="h-4 w-4" /> },
+              { value: 'logic', label: 'Logic', icon: <Code className="h-4 w-4" /> },
+              { value: 'debug', label: 'Debug', icon: <Bug className="h-4 w-4" /> },
+            ]}
+            value={viewMode}
+            onChange={(v) => setViewMode(v as ViewMode)}
+          />
+          <Badge variant={thread.status === 'active' ? 'success' : 'warning'}>
+            {thread.status}
+          </Badge>
+        </div>
       </div>
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Thread Timeline */}
-        <div className="lg:col-span-2 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Timeline</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ThreadTimeline 
-                events={thread.events} 
-                viewMode={viewMode}
-              />
-            </CardContent>
+        {/* Left Column: Timeline */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Thread Info Card */}
+          <Card className="p-4">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-4">
+                <span className="text-muted-foreground">
+                  {thread.events?.length || 0} events
+                </span>
+                <span className="text-muted-foreground">
+                  {thread.conflicts?.length || 0} conflicts
+                </span>
+              </div>
+              <span className="text-muted-foreground">
+                Created: {new Date(thread.events?.[0]?.timestamp || Date.now()).toLocaleDateString()}
+              </span>
+            </div>
           </Card>
 
+          {/* Timeline */}
+          <ThreadTimeline events={thread.events} viewMode={viewMode} />
+
           {/* Command Input */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={commandInput}
-                  onChange={(e) => setCommandInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendCommand()}
-                  placeholder="Send a command to the agents..."
-                  className="flex-1 px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  disabled={sending}
-                />
-                <Button 
-                  onClick={handleSendCommand}
-                  disabled={sending || !commandInput.trim()}
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  {sending ? 'Sending...' : 'Send'}
-                </Button>
-              </div>
-            </CardContent>
+          <Card className="p-4">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={commandInput}
+                onChange={(e) => setCommandInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && !sendingCommand && handleSendCommand()}
+                placeholder="Send a command to the agents..."
+                className="flex-1 px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+                disabled={sendingCommand}
+              />
+              <Button 
+                onClick={handleSendCommand}
+                disabled={!commandInput.trim() || sendingCommand}
+              >
+                {sendingCommand ? (
+                  <span>Sending...</span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <Send className="h-4 w-4" />
+                    Send
+                  </span>
+                )}
+              </Button>
+            </div>
           </Card>
         </div>
 
-        {/* Right: Conflict Panel (if exists) */}
+        {/* Right Column: Conflict Panel */}
         <div>
-          {conflictEvent && !isResolved && conflictEvent.conflict && (
+          {activeConflict && !resolvedConflict && (
             <ConflictPanel
-              conflict={conflictEvent.conflict}
+              conflict={activeConflict}
               selectedOptionId={selectedOptionId}
-              onResolve={handleResolveConflict}
-              isResolving={resolving}
+              onApprove={handleApproveOption}
             />
           )}
-
-          {/* Thread Info Card */}
-          <Card className={conflictEvent && !isResolved ? 'mt-4' : ''}>
-            <CardHeader>
-              <CardTitle>Thread Info</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-neutral-600">Status</span>
-                <Badge variant={thread.status === 'active' ? 'success' : 'neutral'} size="sm">
-                  {thread.status}
-                </Badge>
+          {resolvedConflict && (
+            <Card className="p-6">
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-success/10 mb-4">
+                  <svg className="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="font-semibold mb-1">Conflict Resolved</h3>
+                <p className="text-sm text-muted-foreground">
+                  The agents will proceed with the approved solution.
+                </p>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-neutral-600">Events</span>
-                <span className="text-sm font-medium">{thread.events.length}</span>
+            </Card>
+          )}
+          {!activeConflict && (
+            <Card className="p-6">
+              <div className="text-center text-muted-foreground">
+                <p className="text-sm">No active conflicts</p>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-neutral-600">Last Updated</span>
-                <span className="text-sm font-medium">
-                  {new Date(thread.events[thread.events.length - 1]?.timestamp || Date.now()).toLocaleString()}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+            </Card>
+          )}
         </div>
       </div>
     </div>

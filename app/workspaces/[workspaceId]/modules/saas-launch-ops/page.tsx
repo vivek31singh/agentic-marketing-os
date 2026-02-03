@@ -1,221 +1,148 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Card } from '@/components/ui/Card';
+import { MetricStat } from '@/components/ui/MetricStat';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { MetricStat } from '@/components/ui/MetricStat';
 import { getModule } from '@/lib/apiMock';
-import { Search, ArrowRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { cn } from '@/lib/utils';
-import type { Thread } from '@/data/mockData';
+import { Rocket, ClipboardCheck, Clock, TrendingUp, AlertCircle, ArrowRight } from 'lucide-react';
 
-interface ModuleData {
-  module: any;
-  threads: Thread[];
-  metrics: any[];
+interface SaaSLaunchOpsPageProps {
+  workspaceId: string;
+  moduleSlug: string;
 }
 
-export default function SaaSLaunchOpsPage() {
-  const params = useParams();
-  const [data, setData] = useState<ModuleData | null>(null);
+export default function SaaSLaunchOpsPage({ workspaceId, moduleSlug }: SaaSLaunchOpsPageProps) {
   const [loading, setLoading] = useState(true);
+  const [moduleData, setModuleData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // State for interactive elements
-  const [selectedConflictOption, setSelectedConflictOption] = useState<string | null>(null);
-  const [recoveryAction, setRecoveryAction] = useState<{ [key: string]: string }>({});
-
   useEffect(() => {
-    async function loadData() {
+    async function fetchData() {
       try {
         setLoading(true);
-        const moduleData = await getModule(params.workspaceId as string, 'saas-launch-ops');
-        setData(moduleData);
+        const data = await getModule('SaaS_Launch_Ops');
+        setModuleData(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load module data');
       } finally {
         setLoading(false);
       }
     }
-    loadData();
-  }, [params.workspaceId]);
-
-  const handleApproveOption = (threadId: string, optionId: string) => {
-    setSelectedConflictOption(optionId);
-    setTimeout(() => {
-      setSelectedConflictOption(null);
-    }, 1000);
-  };
-
-  const handleRecoveryAction = (threadId: string, action: string) => {
-    setRecoveryAction(prev => ({ ...prev, [threadId]: action }));
-    setTimeout(() => {
-      setRecoveryAction(prev => {
-        const newState = { ...prev };
-        delete newState[threadId];
-        return newState;
-      });
-    }, 2000);
-  };
+    fetchData();
+  }, [workspaceId]);
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="h-8 bg-neutral-200 rounded w-1/3 animate-pulse" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="h-24 bg-neutral-100 rounded animate-pulse" />
+      <div className="p-6 space-y-6">
+        <div className="h-16 bg-muted animate-pulse rounded" />
+        <div className="grid grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="h-20 bg-muted animate-pulse rounded" />
           ))}
         </div>
-        <div className="space-y-4">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="h-32 bg-neutral-100 rounded animate-pulse" />
+        <div className="grid grid-cols-2 gap-4">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="h-32 bg-muted animate-pulse rounded" />
           ))}
         </div>
       </div>
     );
   }
 
-  if (error || !data) {
+  if (error || !moduleData) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-error mx-auto mb-4" />
-          <p className="text-neutral-600">{error || 'Failed to load module data'}</p>
-          <Button onClick={() => window.location.reload()} className="mt-4">
-            Retry
-          </Button>
-        </div>
+      <div className="p-6">
+        <Card className="p-8 text-center">
+          <AlertCircle className="h-12 w-12 text-error mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Failed to load SaaS Launch Ops</h3>
+          <p className="text-muted-foreground mb-4">{error || 'Unknown error occurred'}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </Card>
       </div>
     );
   }
+
+  const { metrics, threads } = moduleData;
 
   return (
-    <div className="space-y-6">
-      {/* Module Header */}
+    <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-neutral-900">{data.module.name}</h1>
-          <p className="text-neutral-600 mt-1">{data.module.description}</p>
+          <h1 className="text-2xl font-bold mb-1">SaaS Launch Ops</h1>
+          <p className="text-muted-foreground">Coordinate and execute successful product launches</p>
         </div>
         <div className="flex gap-2">
-          <Badge variant="secondary" withDot>
-            {data.module.activeThreadsCount} Active Threads
+          <Badge variant="outline" className="flex items-center gap-1">
+            <Rocket className="h-3 w-3" />
+            Launch Mode
           </Badge>
         </div>
       </div>
 
-      {/* SaaS Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {data.metrics.map((metric, idx) => (
-          <MetricStat
-            key={idx}
-            label={metric.label}
-            value={metric.value}
-            trend={metric.trend}
-            icon={metric.icon}
-          />
-        ))}
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricStat
+          label="Launch Readiness"
+          value={`${metrics?.launchReadiness || 87}%`}
+          trend={+5.2}
+          icon={<Rocket className="h-4 w-4" />}
+        />
+        <MetricStat
+          label="Asset Approval Queue"
+          value={metrics?.assetApprovalQueue || 14}
+          trend={-10}
+          icon={<ClipboardCheck className="h-4 w-4" />}
+          inverseTrend
+        />
+        <MetricStat
+          label="Days to Launch"
+          value={metrics?.daysToLaunch || 23}
+          trend={-2}
+          icon={<Clock className="h-4 w-4" />}
+          inverseTrend
+        />
+        <MetricStat
+          label="Pre-launch Signups"
+          value={metrics?.prelaunchSignups?.toLocaleString() || '2,847'}
+          trend={+18.5}
+          icon={<TrendingUp className="h-4 w-4" />}
+        />
       </div>
 
-      {/* Active Threads */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Launch Threads</h2>
-          <Button variant="outline" size="sm">
-            <Search className="w-4 h-4 mr-2" />
-            Search Threads
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          {data.threads.map((thread) => {
-            const hasConflict = thread.events.some(e => e.type === 'conflict');
-            const recovery = recoveryAction[thread.id];
-
-            return (
-              <Card key={thread.id} className={cn(
-                "transition-all",
-                hasConflict && "border-error-300 border-2"
-              )}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-lg">{thread.title}</CardTitle>
-                        {hasConflict && (
-                          <Badge variant="error" size="sm" withDot>
-                            Conflict
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-neutral-600 mt-1">{thread.objective}</p>
-                    </div>
-                    <Link href={`/workspaces/${params.workspaceId}/modules/saas-launch-ops/${thread.id}`}>
-                      <Button variant="ghost" size="sm">
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
-                    </Link>
+      {/* Active Threads Grid */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4">Active Launch Threads</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {threads?.map((thread: any) => (
+            <Link
+              key={thread.id}
+              href={`/workspaces/${workspaceId}/modules/saas-launch-ops/${thread.id}`}
+            >
+              <Card className="p-4 hover:border-primary transition-colors cursor-pointer h-full">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-medium mb-1">{thread.title}</h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {thread.objective}
+                    </p>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Status & Metadata */}
-                  <div className="flex items-center gap-3">
-                    <Badge variant={thread.status === 'active' ? 'success' : 'neutral'}>
-                      {thread.status}
-                    </Badge>
-                    <span className="text-sm text-neutral-500">
-                      {thread.events.length} events
-                    </span>
-                    {hasConflict && (
-                      <span className="text-sm text-error-600 flex items-center gap-1">
-                        <AlertTriangle className="w-4 h-4" />
-                        Awaiting Resolution
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Interactive Conflict Panel */}
-                  {hasConflict && (
-                    <div className="bg-error-50 border border-error-200 rounded-lg p-4 mt-4">
-                      <h4 className="font-semibold text-error-900 mb-2">Launch Asset Conflict</h4>
-                      <p className="text-sm text-error-700 mb-3">
-                        Launch readiness conflicts detected. Approve the correct asset or strategy.
-                      </p>
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          onClick={() => handleApproveOption(thread.id, 'option1')}
-                          disabled={!!selectedConflictOption}
-                        >
-                          {selectedConflictOption ? 'Approved' : 'Approve Asset'}
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleRecoveryAction(thread.id, 'retry')}
-                          disabled={!!recovery}
-                        >
-                          {recovery === 'retry' ? 'Regenerating...' : 'Regenerate'}
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="ghost"
-                          onClick={() => handleRecoveryAction(thread.id, 'autofix')}
-                          disabled={!!recovery}
-                        >
-                          {recovery === 'autofix' ? 'Auto-fixing...' : 'Auto-Fix'}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
+                  <Badge variant={thread.status === 'active' ? 'success' : 'warning'}>
+                    {thread.status}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {thread.events?.length || 0} events
+                  </span>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                </div>
               </Card>
-            );
-          })}
+            </Link>
+          ))}
         </div>
       </div>
     </div>

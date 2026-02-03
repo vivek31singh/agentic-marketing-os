@@ -1,164 +1,159 @@
-// Mock API Layer - Simulates async data fetching with delays
-
-import { 
-  mockWorkspaces, 
-  mockModules, 
-  type Workspace, 
-  type Module, 
-  type Thread, 
-  type Event,
-  type Agent 
-} from '@/data/mockData';
-import { mockMissionControlData } from '@/data/missionControl';
+import { Workspace, Module, Thread, Agent, Event } from '@/data/mockData';
+import workspaces from '@/data/mockData';
+import missionControlData from '@/data/missionControl';
 import { mockSEOThreads, mockSEOMetrics } from '@/data/seoCluster';
-import { mockContentThreads, mockContentMetrics } from '@/data/contentFactory';
-import { mockSocialThreads, mockSocialMetrics } from '@/data/socialGrowth';
-import { mockSaaSThreads, mockSaaSMetrics } from '@/data/saasLaunchOps';
-import { mockWorkspaceSettings } from '@/data/workspaceSettings';
+import { contentThreads, contentMetrics } from '@/data/contentFactory';
+import { socialThreads, socialMetrics } from '@/data/socialGrowth';
+import { saasThreads, saasMetrics } from '@/data/saasLaunchOps';
 
-// Simulated delay for API calls (ms)
-const API_DELAY = 800;
-
-/**
- * Simulates a network delay
- */
+// Helper function to simulate network delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Random delay between min and max milliseconds
+const randomDelay = (min: number = 800, max: number = 1500) => {
+  const ms = Math.floor(Math.random() * (max - min + 1)) + min;
+  return delay(ms);
+};
+
 /**
- * Get workspace by ID
+ * Fetches a workspace by ID
+ * @param id - The workspace identifier
+ * @returns Promise resolving to the Workspace object
  */
-export async function getWorkspace(workspaceId: string): Promise<Workspace> {
-  await delay(API_DELAY);
-  
-  const workspace = mockWorkspaces.find(w => w.id === workspaceId);
+export async function getWorkspace(id: string): Promise<Workspace> {
+  await randomDelay(800, 1200);
+  const workspace = workspaces.workspaces.find(w => w.id === id);
   
   if (!workspace) {
-    throw new Error(`Workspace with ID ${workspaceId} not found`);
+    throw new Error(`Workspace with id "${id}" not found`);
   }
   
   return workspace;
 }
 
 /**
- * Get all workspaces
+ * Fetches a module by ID
+ * @param id - The module identifier
+ * @returns Promise resolving to the Module object with additional metadata
  */
-export async function getWorkspaces(): Promise<Workspace[]> {
-  await delay(API_DELAY);
-  return mockWorkspaces;
-}
-
-/**
- * Get module data for a specific workspace
- */
-export async function getModule(workspaceId: string, moduleSlug: string): Promise<{
-  module: Module;
-  threads: Thread[];
-  metrics: any[];
-}> {
-  await delay(API_DELAY);
+export async function getModule(id: string): Promise<Module & { metrics?: any; threads?: Thread[] }> {
+  await randomDelay(900, 1400);
   
-  const module = mockModules.find(m => m.slug === moduleSlug);
+  // Find the module in mockData
+  const module = workspaces.workspaces[0]?.modules.find(m => m.id === id);
   
   if (!module) {
-    throw new Error(`Module ${moduleSlug} not found`);
+    throw new Error(`Module with id "${id}" not found`);
   }
+
+  // Add module-specific data based on the module ID
+  let moduleData: any = { ...module };
   
-  let threads: Thread[] = [];
-  let metrics: any[] = [];
-  
-  // Return module-specific data
-  switch (moduleSlug) {
-    case 'seo-cluster':
-      threads = mockSEOThreads;
-      metrics = mockSEOMetrics;
+  switch (id) {
+    case 'SEO_Cluster':
+      moduleData.metrics = mockSEOMetrics;
+      moduleData.threads = mockSEOThreads;
       break;
-    case 'content-factory':
-      threads = mockContentThreads;
-      metrics = mockContentMetrics;
+    case 'Content_Factory':
+      moduleData.metrics = contentMetrics;
+      moduleData.threads = contentThreads;
       break;
-    case 'social-growth':
-      threads = mockSocialThreads;
-      metrics = mockSocialMetrics;
+    case 'Social_Growth':
+      moduleData.metrics = socialMetrics;
+      moduleData.threads = socialThreads;
       break;
-    case 'saas-launch-ops':
-      threads = mockSaaSThreads;
-      metrics = mockSaaSMetrics;
+    case 'SaaS_Launch_Ops':
+      moduleData.metrics = saasMetrics;
+      moduleData.threads = saasThreads;
       break;
     default:
-      threads = [];
-      metrics = [];
+      // Generic module data
+      moduleData.metrics = {};
+      moduleData.threads = [];
   }
   
-  return { module, threads, metrics };
+  return moduleData;
 }
 
 /**
- * Get thread detail by thread ID
+ * Fetches a thread by ID
+ * @param id - The thread identifier
+ * @returns Promise resolving to the Thread object
  */
-export async function getThread(threadId: string): Promise<Thread> {
-  await delay(API_DELAY);
+export async function getThread(id: string): Promise<Thread> {
+  await randomDelay(1000, 1500);
   
-  // Search across all module thread collections
+  // Search for the thread across all module data
   const allThreads = [
     ...mockSEOThreads,
-    ...mockContentThreads,
-    ...mockSocialThreads,
-    ...mockSaaSThreads
+    ...contentThreads,
+    ...socialThreads,
+    ...saasThreads
   ];
   
-  const thread = allThreads.find(t => t.id === threadId);
+  const thread = allThreads.find(t => t.id === id);
   
   if (!thread) {
-    throw new Error(`Thread with ID ${threadId} not found`);
+    throw new Error(`Thread with id "${id}" not found`);
   }
   
   return thread;
 }
 
 /**
- * Get Mission Control dashboard data
+ * Posts a command to a thread
+ * @param threadId - The thread identifier
+ * @param text - The command text to post
+ * @returns Promise resolving to the updated Thread object
  */
-export async function getMissionControlData(workspaceId: string) {
-  await delay(API_DELAY);
-  return mockMissionControlData;
-}
-
-/**
- * Post a command to a thread (simulated)
- */
-export async function postCommand(threadId: string, command: string): Promise<Event> {
-  await delay(API_DELAY);
+export async function postCommand(threadId: string, text: string): Promise<Thread> {
+  await randomDelay(500, 1000);
   
-  const newEvent: Event = {
-    id: `evt_${Date.now()}`,
-    type: 'message',
-    timestamp: new Date().toISOString(),
-    agent: {
-      id: 'user',
-      name: 'User',
-      role: 'Administrator',
-      avatar: '',
-      metrics: { accuracy: 100, latency: 0 }
-    },
-    content: command,
-    meta: { source: 'user_input' }
+  // Create a mock user agent
+  const userAgent: Agent = {
+    id: 'user-001',
+    name: 'You',
+    role: 'User',
+    avatar: '👤',
+    metrics: {
+      accuracy: 100,
+      latency: 0
+    }
   };
   
-  return newEvent;
+  // Create a new message event
+  const newEvent: Event = {
+    type: 'message',
+    timestamp: new Date().toISOString(),
+    agent: userAgent,
+    content: text,
+    meta: {
+      source: 'user_command'
+    }
+  };
+  
+  // Get the current thread and add the new event
+  const thread = await getThread(threadId);
+  thread.events = [...thread.events, newEvent];
+  
+  return thread;
 }
 
 /**
- * Get workspace settings
+ * Fetches mission control data for a workspace
+ * @param workspaceId - The workspace identifier
+ * @returns Promise resolving to mission control data
  */
-export async function getWorkspaceSettings(workspaceId: string) {
-  await delay(API_DELAY);
-  return mockWorkspaceSettings;
+export async function getMissionControlData(workspaceId: string) {
+  await randomDelay(800, 1300);
+  return missionControlData;
 }
 
 /**
- * Update workspace settings (simulated)
+ * Fetches all available workspaces
+ * @returns Promise resolving to array of workspaces
  */
-export async function updateWorkspaceSettings(workspaceId: string, settings: any) {
-  await delay(API_DELAY);
-  return { success: true, settings };
+export async function getWorkspaces(): Promise<Workspace[]> {
+  await randomDelay(600, 1000);
+  return workspaces.workspaces;
 }

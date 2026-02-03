@@ -1,78 +1,101 @@
-import { getWorkspaces } from '@/lib/apiMock';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import Link from 'next/link';
+import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Link } from 'lucide-react';
-import LinkNext from 'next/link';
+import { Badge } from '@/components/ui/Badge';
+import { getWorkspaces } from '@/lib/apiMock';
+import { Activity, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 
 export default async function RootPage() {
   const workspaces = await getWorkspaces();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 flex items-center justify-center p-6">
-      <div className="max-w-4xl w-full space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold text-neutral-900">
-            Agentic Marketing OS
-          </h1>
-          <p className="text-lg text-neutral-600">
-            Select a workspace to continue
-          </p>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                <Activity className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <h1 className="text-xl font-bold">Agentic Marketing OS</h1>
+            </div>
+            <Badge variant="outline" className="flex items-center gap-1">
+              <CheckCircle className="h-3 w-3" />
+              System Online
+            </Badge>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 py-12">
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold mb-2">Your Workspaces</h2>
+          <p className="text-muted-foreground">Select a workspace to get started</p>
         </div>
 
-        {/* Workspace Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {workspaces.map((workspace) => (
-            <LinkNext
-              key={workspace.id}
-              href={`/workspaces/${workspace.id}`}
-            >
-              <Card className="hover:shadow-lg hover:border-primary-400 transition-all cursor-pointer h-full">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="text-2xl">{workspace.name}</CardTitle>
-                    <Badge
-                      variant={workspace.status === 'active' ? 'success' : 'warning'}
-                      withDot
-                    >
-                      {workspace.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
+            <Link key={workspace.id} href={`/workspaces/${workspace.id}`}>
+              <Card className="p-6 hover:border-primary transition-colors cursor-pointer h-full">
+                <div className="flex items-start justify-between mb-4">
                   <div>
-                    <p className="text-sm text-neutral-500">Workspace ID</p>
-                    <p className="font-mono text-sm bg-neutral-100 px-2 py-1 rounded inline-block">
-                      {workspace.id}
-                    </p>
+                    <h3 className="text-lg font-semibold mb-1">{workspace.name}</h3>
+                    <div className="flex items-center gap-2">
+                      {workspace.status === 'active' && (
+                        <Badge variant="success" className="text-xs">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Active
+                        </Badge>
+                      )}
+                      {workspace.status === 'idle' && (
+                        <Badge variant="warning" className="text-xs">
+                          <Clock className="h-3 w-3 mr-1" />
+                          Idle
+                        </Badge>
+                      )}
+                      {workspace.status === 'error' && (
+                        <Badge variant="error" className="text-xs">
+                          <AlertTriangle className="h-3 w-3 mr-1" />
+                          Error
+                        </Badge>
+                      )}
+                    </div>
                   </div>
+                </div>
+
+                <div className="space-y-3">
                   <div>
-                    <p className="text-sm text-neutral-500">System Health</p>
-                    <div className="w-full bg-neutral-200 rounded-full h-2 mt-1">
+                    <div className="flex items-center justify-between text-sm mb-1">
+                      <span className="text-muted-foreground">System Health</span>
+                      <span className="font-medium">{workspace.health}%</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
                       <div
-                        className={`h-2 rounded-full transition-all ${
-                          workspace.health > 80
-                            ? 'bg-success-500'
-                            : workspace.health > 50
-                            ? 'bg-warning-500'
-                            : 'bg-error-500'
+                        className={`h-2 rounded-full transition-colors ${
+                          workspace.health >= 80 ? 'bg-success' :
+                          workspace.health >= 50 ? 'bg-warning' : 'bg-error'
                         }`}
                         style={{ width: `${workspace.health}%` }}
                       />
                     </div>
-                    <p className="text-xs text-neutral-600 mt-1">{workspace.health}%</p>
                   </div>
-                  <Button variant="outline" className="w-full mt-4">
-                    <Link className="w-4 h-4 mr-2" />
-                    Enter Workspace
-                  </Button>
-                </CardContent>
+
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Active Modules</span>
+                    <span className="font-medium">{workspace.modules?.length || 0}</span>
+                  </div>
+                </div>
+
+                <Button className="w-full mt-4">
+                  Open Workspace
+                </Button>
               </Card>
-            </LinkNext>
+            </Link>
           ))}
         </div>
-      </div>
+      </main>
     </div>
   );
 }

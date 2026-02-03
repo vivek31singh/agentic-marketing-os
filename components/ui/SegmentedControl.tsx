@@ -1,83 +1,42 @@
-import * as React from 'react';
-import { cva, type VariantProps } from 'class-variance-authority';
+import React from 'react';
 import { cn } from '@/lib/utils';
 
-const segmentedControlVariants = cva(
-  'inline-flex items-center justify-center rounded-lg bg-neutral-100 p-1 text-sm font-medium text-neutral-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none',
-  {
-    variants: {
-      variant: {
-        default: 'bg-neutral-100',
-      },
-      size: {
-        default: 'h-9 px-1',
-        sm: 'h-8 px-0.5',
-        lg: 'h-10 px-1.5',
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-      size: 'default',
-    },
-  }
-);
-
-const segmentedControlItemVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
-  {
-    variants: {
-      active: {
-        true: 'bg-white text-neutral-900 shadow-sm',
-        false: 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-200/50',
-      },
-    },
-    defaultVariants: {
-      active: false,
-    },
-  }
-);
-
-export interface SegmentedControlItem {
+export interface SegmentedControlOption {
+  value: string;
   label: string;
-  value: string;
+  icon?: React.ReactNode;
 }
 
-export interface SegmentedControlProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof segmentedControlVariants> {
-  items: SegmentedControlItem[];
+export interface SegmentedControlProps {
+  options: SegmentedControlOption[];
   value: string;
-  onValueChange: (value: string) => void;
+  onChange: (value: string) => void;
+  className?: string;
 }
 
-function SegmentedControl({
-  className,
-  items,
+export function SegmentedControl({
+  options,
   value,
-  onValueChange,
-  variant,
-  size,
-  ...props
+  onChange,
+  className,
 }: SegmentedControlProps) {
   return (
-    <div
-      className={cn(segmentedControlVariants({ variant, size, className }))}
-      {...props}
-    >
-      {items.map((item) => (
+    <div className={cn('inline-flex rounded-lg border border-border bg-muted/50 p-1', className)}>
+      {options.map((option) => (
         <button
-          key={item.value}
-          type="button"
-          onClick={() => onValueChange(item.value)}
+          key={option.value}
+          onClick={() => onChange(option.value)}
           className={cn(
-            segmentedControlItemVariants({ active: value === item.value })
+            'inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+            value === option.value
+              ? 'bg-background text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
           )}
         >
-          {item.label}
+          {option.icon}
+          {option.label}
         </button>
       ))}
     </div>
   );
 }
-
-export { SegmentedControl, segmentedControlVariants };
