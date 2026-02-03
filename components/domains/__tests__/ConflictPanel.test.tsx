@@ -1,5 +1,6 @@
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import '@testing-library/jest-dom'
 import ConflictPanel from '../ConflictPanel'
 
 // Mock data for testing
@@ -15,132 +16,182 @@ const mockConflict = {
         avatar: '/avatars/tech-lead.png',
         metrics: { accuracy: 95, latency: 120 },
       },
-      description: 'Use React Server Components for better performance',
-      label: 'Server Components',
-      outcome: 'Improved initial load time, but increased complexity',
+      description: 'Use server-side rendering for optimal performance',
+      label: 'SSR Approach',
+      outcome: 'Improved initial load time but increased server load',
     },
     {
       agent: {
         id: 'agent-2',
-        name: 'Crawl_Spider',
-        role: 'SEO Specialist',
-        avatar: '/avatars/crawl-spider.png',
-        metrics: { accuracy: 88, latency: 200 },
+        name: 'Frontend_Dev',
+        role: 'Frontend Developer',
+        avatar: '/avatars/frontend-dev.png',
+        metrics: { accuracy: 88, latency: 90 },
       },
-      description: 'Use static generation for maximum SEO benefit',
-      label: 'Static Generation',
-      outcome: 'Better SEO scores, but slower build times',
+      description: 'Use static site generation for better caching',
+      label: 'SSG Approach',
+      outcome: 'Excellent caching but requires rebuild on content changes',
     },
   ],
 }
 
 describe('ConflictPanel', () => {
-  it('renders the conflict title and reason', () => {
-    render(<ConflictPanel conflict={mockConflict} onResolve={jest.fn()} />)
-    
-    expect(screen.getByText(/Conflict Detected/i)).toBeInTheDocument()
+  it('renders the conflict reason and all options', () => {
+    render(<ConflictPanel conflict={mockConflict} />)
+
+    // Check if conflict reason is displayed
     expect(screen.getByText(mockConflict.reason)).toBeInTheDocument()
+
+    // Check if both options are displayed
+    expect(screen.getByText('SSR Approach')).toBeInTheDocument()
+    expect(screen.getByText('SSG Approach')).toBeInTheDocument()
+
+    // Check if agent names are displayed
+    expect(screen.getByText('Tech_Lead')).toBeInTheDocument()
+    expect(screen.getByText('Frontend_Dev')).toBeInTheDocument()
+
+    // Check if descriptions are displayed
+    expect(screen.getByText('Use server-side rendering for optimal performance')).toBeInTheDocument()
+    expect(screen.getByText('Use static site generation for better caching')).toBeInTheDocument()
   })
 
-  it('renders all conflict options', () => {
-    render(<ConflictPanel conflict={mockConflict} onResolve={jest.fn()} />)
-    
-    mockConflict.options.forEach((option) => {
-      expect(screen.getByText(option.label)).toBeInTheDocument()
-      expect(screen.getByText(option.description)).toBeInTheDocument()
-      expect(screen.getByText(option.agent.name)).toBeInTheDocument()
-    })
+  it('allows users to select a conflict option', () => {
+    render(<ConflictPanel conflict={mockConflict} />)
+
+    const firstOption = screen.getByText('SSR Approach')
+    const secondOption = screen.getByText('SSG Approach')
+
+    // Click on the first option
+    fireEvent.click(firstOption)
+
+    // The selected option should have a selected state (visual feedback)
+    // This typically appears as a border or background color change
+    expect(firstOption.closest('[role="radio"]')).toHaveClass('border-primary')
+    expect(secondOption.closest('[role="radio"]')).not.toHaveClass('border-primary')
+
+    // Click on the second option
+    fireEvent.click(secondOption)
+
+    // Now the second option should be selected
+    expect(secondOption.closest('[role="radio"]')).toHaveClass('border-primary')
+    expect(firstOption.closest('[role="radio"]')).not.toHaveClass('border-primary')
   })
 
-  it('highlights an option when selected', () => {
-    render(<ConflictPanel conflict={mockConflict} onResolve={jest.fn()} />)
-    
-    const firstOption = screen.getByText(mockConflict.options[0].label).closest('button')
-    fireEvent.click(firstOption!)
-    
-    // Verify the option has a selected state (checked via class or aria-pressed)
-    expect(firstOption).toHaveClass('ring-2')
-  })
+  it('does not allow approval when no option is selected', () => {
+    render(<ConflictPanel conflict={mockConflict} />)
 
-  it('enables the Approve button when an option is selected', () => {
-    render(<ConflictPanel conflict={mockConflict} onResolve={jest.fn()} />)
-    
     const approveButton = screen.getByRole('button', { name: /approve/i })
+
+    // The approve button should be disabled when no option is selected
     expect(approveButton).toBeDisabled()
-    
-    const firstOption = screen.getByText(mockConflict.options[0].label).closest('button')
-    fireEvent.click(firstOption!)
-    
+  })
+
+  it('enables the approve button when an option is selected', () => {
+    render(<ConflictPanel conflict={mockConflict} />)
+
+    const approveButton = screen.getByRole('button', { name: /approve/i })
+    const firstOption = screen.getByText('SSR Approach')
+
+    // Approve button should be disabled initially
+    expect(approveButton).toBeDisabled()
+
+    // Select an option
+    fireEvent.click(firstOption)
+
+    // Approve button should now be enabled
     expect(approveButton).not.toBeDisabled()
   })
 
-  it('calls onResolve with the selected option when Approve is clicked', async () => {
-    const handleResolve = jest.fn()
-    render(<ConflictPanel conflict={mockConflict} onResolve={handleResolve} />)
-    
-    // Select the second option
-    const secondOption = screen.getByText(mockConflict.options[1].label).closest('button')
-    fireEvent.click(secondOption!)
-    
-    // Click Approve
-    const approveButton = screen.getByRole('button', { name: /approve/i })
-    fireEvent.click(approveButton)
-    
-    await waitFor(() => {
-      expect(handleResolve).toHaveBeenCalledTimes(1)
-      expect(handleResolve).toHaveBeenCalledWith(
-        mockConflict.id,
-        mockConflict.options[1]
-      )
-    })
-  })
+  it('updates state to resolved when approve is clicked', async () => {
+    render(<ConflictPanel conflict={mockConflict} />)
 
-  it('disables interactions after approval', async () => {
-    const handleResolve = jest.fn()
-    render(<ConflictPanel conflict={mockConflict} onResolve={handleResolve} />)
-    
-    // Select and approve
-    const firstOption = screen.getByText(mockConflict.options[0].label).closest('button')
-    fireEvent.click(firstOption!)
-    
+    const firstOption = screen.getByText('SSR Approach')
     const approveButton = screen.getByRole('button', { name: /approve/i })
-    fireEvent.click(approveButton)
-    
-    await waitFor(() => {
-      // After approval, buttons should be disabled
-      expect(approveButton).toBeDisabled()
-      expect(firstOption).toBeDisabled()
-    })
-  })
 
-  it('displays resolved state after approval', async () => {
-    render(<ConflictPanel conflict={mockConflict} onResolve={jest.fn()} />)
-    
-    const firstOption = screen.getByText(mockConflict.options[0].label).closest('button')
-    fireEvent.click(firstOption!)
-    
-    const approveButton = screen.getByRole('button', { name: /approve/i })
+    // Select the first option
+    fireEvent.click(firstOption)
+
+    // Click approve
     fireEvent.click(approveButton)
-    
+
+    // Wait for state update and visual feedback
     await waitFor(() => {
+      // Should show resolved state
       expect(screen.getByText(/resolved/i)).toBeInTheDocument()
-      expect(screen.getByText(mockConflict.options[0].label)).toBeInTheDocument()
+      expect(screen.getByText('SSR Approach')).toBeInTheDocument()
+    })
+
+    // The approve button should no longer be visible or be disabled
+    await waitFor(() => {
+      const resolvedPanel = screen.getByText(/conflict resolved/i)
+      expect(resolvedPanel).toBeInTheDocument()
     })
   })
 
-  it('allows switching selection before approval', () => {
-    render(<ConflictPanel conflict={mockConflict} onResolve={jest.fn()} />)
-    
-    const firstOption = screen.getByText(mockConflict.options[0].label).closest('button')
-    const secondOption = screen.getByText(mockConflict.options[1].label).closest('button')
-    
+  it('displays the selected outcome after approval', async () => {
+    render(<ConflictPanel conflict={mockConflict} />)
+
+    const firstOption = screen.getByText('SSR Approach')
+    const approveButton = screen.getByRole('button', { name: /approve/i })
+
+    // Select the first option
+    fireEvent.click(firstOption)
+
+    // Click approve
+    fireEvent.click(approveButton)
+
+    // Wait for resolution state
+    await waitFor(() => {
+      // The outcome should be displayed
+      expect(screen.getByText('Improved initial load time but increased server load')).toBeInTheDocument()
+    })
+  })
+
+  it('shows loading state while processing approval', async () => {
+    render(<ConflictPanel conflict={mockConflict} />)
+
+    const firstOption = screen.getByText('SSR Approach')
+    const approveButton = screen.getByRole('button', { name: /approve/i })
+
+    // Select an option
+    fireEvent.click(firstOption)
+
+    // Click approve
+    fireEvent.click(approveButton)
+
+    // Check for loading state immediately after click
+    expect(approveButton).toBeDisabled()
+    expect(screen.getByText(/processing/i) || screen.getByText(/loading/i)).toBeInTheDocument()
+  })
+
+  it('switches between options correctly', () => {
+    render(<ConflictPanel conflict={mockConflict} />)
+
+    const firstOption = screen.getByText('SSR Approach')
+    const secondOption = screen.getByText('SSG Approach')
+    const approveButton = screen.getByRole('button', { name: /approve/i })
+
     // Select first option
-    fireEvent.click(firstOption!)
-    expect(firstOption).toHaveClass('ring-2')
-    
+    fireEvent.click(firstOption)
+    expect(firstOption.closest('[role="radio"]')).toHaveClass('border-primary')
+    expect(approveButton).not.toBeDisabled()
+
     // Switch to second option
-    fireEvent.click(secondOption!)
-    expect(secondOption).toHaveClass('ring-2')
-    expect(firstOption).not.toHaveClass('ring-2')
+    fireEvent.click(secondOption)
+    expect(secondOption.closest('[role="radio"]')).toHaveClass('border-primary')
+    expect(firstOption.closest('[role="radio"]')).not.toHaveClass('border-primary')
+    expect(approveButton).not.toBeDisabled()
+  })
+
+  it('displays agent information for each option', () => {
+    render(<ConflictPanel conflict={mockConflict} />)
+
+    // Check for agent roles
+    expect(screen.getByText('Technical Lead')).toBeInTheDocument()
+    expect(screen.getByText('Frontend Developer')).toBeInTheDocument()
+
+    // Check for agent avatars (alt text or aria-label)
+    const avatars = screen.getAllByRole('img')
+    expect(avatars).toHaveLength(2)
   })
 })
