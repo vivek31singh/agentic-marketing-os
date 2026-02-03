@@ -25,7 +25,8 @@
     "Implement the Root Landing Page (`app/page.tsx`) to display a list of available workspaces and provide navigation links to specific workspace IDs.",
     "Implement the Modal UI Primitive (`components/ui/Modal.tsx`).",
     "Refactor the Mission Control Dashboard to implement the new design specifications. This involves:\n1. Updating `data/missionControl.ts` to include the detailed mock data for status pills, KPI trends, domain health details, active thread lists, and the live agent activity feed.\n2. Rewriting `app/workspaces/[workspaceId]/mission-control/page.tsx` to structure the page into: a top header bar, a row of KPI summary cards, and a bottom grid split into \"Domain Health\" (top-left), \"Active Threads\" (bottom-left), and \"Live Agent Activity\" (right column), applying the specific Tailwind styling and responsive rules defined in the brief.",
-    "Implement `components/ui/Skeleton.tsx` and `components/ui/EmptyState.tsx` components."
+    "Implement `components/ui/Skeleton.tsx` and `components/ui/EmptyState.tsx` components.",
+    "Implement Next.js Loading and Error Boundaries. Create `app/workspaces/[workspaceId]/loading.tsx`, `app/workspaces/[workspaceId]/error.tsx`, and `app/workspaces/[workspaceId]/mission-control/loading.tsx`. These files should utilize the `Skeleton` component to mimic the layout structure (Sidebar, MetricStats, Cards) and the `EmptyState` component for error displays, ensuring the application remains responsive and informative during data fetching or runtime failures."
   ],
-  "last_commit": "feat: add Skeleton and EmptyState UI components"
+  "last_commit": "feat: implement Next.js loading and error boundaries for workspace pages\n\n- Add workspace-level loading.tsx with skeleton layout (sidebar, main content, right rail)\n- Add workspace-level error.tsx with EmptyState component for graceful error handling\n- Add mission-control loading.tsx with skeleton mimicking KPI cards and grid layout\n- Ensures responsive UI during data fetching and runtime failures"
 }
