@@ -1,34 +1,34 @@
-'use client';
-
 import { BoardHeader } from '@/components/domains/kanban/BoardHeader';
 import { BoardInsightsStrip } from '@/components/domains/kanban/BoardInsightsStrip';
 import { KanbanBoard } from '@/components/domains/kanban/KanbanBoard';
 import { LiveActivityRail } from '@/components/domains/kanban/LiveActivityRail';
-import { mockMissionThreads, mockMissionKPIs, mockLiveActivity } from '@/data/missionControl';
+import { missionControlData, kanbanColumns } from '@/data/missionControl';
 
 export default function MissionControlPage() {
+  // Extract data from missionControlData
+  const { columns, items, stats } = missionControlData;
+
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-slate-50">
+    <div className="flex flex-col h-full">
       {/* Header Section */}
-      <div className="border-b border-slate-200 bg-white px-6 py-4">
-        <BoardHeader />
-      </div>
-
-      {/* Insights Strip */}
-      <div className="border-b border-slate-200 bg-white px-6 py-3">
-        <BoardInsightsStrip kpis={mockMissionKPIs} />
-      </div>
-
+      <BoardHeader workspaceName="TechStart" workspaceStatus="active" />
+      
+      {/* KPI Insights Strip */}
+      <BoardInsightsStrip stats={stats} />
+      
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Kanban Board - Left Side */}
-        <div className="flex-1 overflow-auto p-6">
-          <KanbanBoard items={mockMissionThreads} />
+        <div className="flex-1 overflow-x-auto overflow-y-hidden p-4">
+          <KanbanBoard 
+            columns={columns || kanbanColumns} 
+            items={items || []} 
+          />
         </div>
-
+        
         {/* Live Activity Rail - Right Side */}
-        <div className="w-80 border-l border-slate-200 bg-white">
-          <LiveActivityRail activities={mockLiveActivity} />
+        <div className="w-80 border-l border-border bg-card/50 overflow-y-auto">
+          <LiveActivityRail />
         </div>
       </div>
     </div>
