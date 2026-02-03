@@ -1,34 +1,44 @@
+import { getMissionControlData } from '@/lib/apiMock';
 import { BoardHeader } from '@/components/domains/kanban/BoardHeader';
-import { BoardInsightsStrip } from '@/components/domains/kanban/BoardInsightsStrip';
 import { KanbanBoard } from '@/components/domains/kanban/KanbanBoard';
 import { LiveActivityRail } from '@/components/domains/kanban/LiveActivityRail';
-import { missionControlData, kanbanColumns } from '@/data/missionControl';
+import { BoardInsightsStrip } from '@/components/domains/kanban/BoardInsightsStrip';
 
-export default function MissionControlPage() {
-  // Extract data from missionControlData
-  const { columns, items, stats } = missionControlData;
+interface MissionControlPageProps {
+  params: {
+    workspaceId: string;
+  };
+}
+
+export default async function MissionControlPage({ params }: MissionControlPageProps) {
+  const data = await getMissionControlData(params.workspaceId);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="h-full flex flex-col">
       {/* Header Section */}
-      <BoardHeader workspaceName="TechStart" workspaceStatus="active" />
-      
+      <BoardHeader 
+        workspaceName="TechStart" 
+        workspaceId={params.workspaceId}
+      />
+
       {/* KPI Insights Strip */}
-      <BoardInsightsStrip stats={stats} />
-      
-      {/* Main Content Area */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Kanban Board - Left Side */}
-        <div className="flex-1 overflow-x-auto overflow-y-hidden p-4">
+      <div className="px-6 py-4">
+        <BoardInsightsStrip insights={data.insights} />
+      </div>
+
+      {/* Main Content Area - Two Column Layout */}
+      <div className="flex-1 flex overflow-hidden px-6 pb-6 gap-6">
+        {/* Left: Kanban Board (Main) */}
+        <div className="flex-1 overflow-hidden">
           <KanbanBoard 
-            columns={columns || kanbanColumns} 
-            items={items || []} 
+            columns={data.columns}
+            threads={data.threads}
           />
         </div>
-        
-        {/* Live Activity Rail - Right Side */}
-        <div className="w-80 border-l border-border bg-card/50 overflow-y-auto">
-          <LiveActivityRail />
+
+        {/* Right: Live Activity Rail (Sidebar) */}
+        <div className="w-80 overflow-hidden">
+          <LiveActivityRail activities={data.liveActivities} />
         </div>
       </div>
     </div>

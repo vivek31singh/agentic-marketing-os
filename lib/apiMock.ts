@@ -1,85 +1,164 @@
-// Mock API functions for thread management
+// Mock API Layer - Simulates async data fetching with delays
 
-import { Thread, mockAgents } from '@/data/mockData';
+import { 
+  mockWorkspaces, 
+  mockModules, 
+  type Workspace, 
+  type Module, 
+  type Thread, 
+  type Event,
+  type Agent 
+} from '@/data/mockData';
+import { mockMissionControlData } from '@/data/missionControl';
+import { mockSEOThreads, mockSEOMetrics } from '@/data/seoCluster';
+import { mockContentThreads, mockContentMetrics } from '@/data/contentFactory';
+import { mockSocialThreads, mockSocialMetrics } from '@/data/socialGrowth';
+import { mockSaaSThreads, mockSaaSMetrics } from '@/data/saasLaunchOps';
+import { mockWorkspaceSettings } from '@/data/workspaceSettings';
 
-// Mock thread data store
-const mockThreads: Record<string, Thread & { conflict?: { id: string; reason: string; options: Array<{ agent: typeof mockAgents[0]; description: string; label: string; outcome: string }> } }> = {
-    'thread-1': {
-        id: 'thread-1',
-        slug: 'q1-keyword-research-technology-cluster',
-        title: 'Q1 Keyword Research - Technology Cluster',
-        status: 'active',
-        objective: 'Identify high-value keywords for Q1 technology content strategy',
-        events: [
-            {
-                type: 'message',
-                timestamp: new Date(Date.now() - 3600000).toISOString(),
-                agent: mockAgents[0],
-                content: 'Starting keyword analysis for technology cluster...',
-                logicChain: ['Initialized keyword research module', 'Loaded competition data', 'Analyzing search volume trends'],
-            },
-            {
-                type: 'message',
-                timestamp: new Date(Date.now() - 1800000).toISOString(),
-                agent: mockAgents[1],
-                content: 'Found 47 high-potential keywords with monthly search volume > 10k',
-                logicChain: ['Filtered by search volume', 'Applied competition score threshold', 'Ranked by opportunity score'],
-            },
-            {
-                type: 'system',
-                timestamp: new Date(Date.now() - 900000).toISOString(),
-                agent: mockAgents[0],
-                content: 'Analysis complete. Ready for review.',
-            },
-        ],
-    },
-    'thread-2': {
-        id: 'thread-2',
-        slug: 'content-brief-generation',
-        title: 'Content Brief Generation',
-        status: 'active',
-        objective: 'Generate comprehensive content briefs for top-priority topics',
-        events: [
-            {
-                type: 'message',
-                timestamp: new Date(Date.now() - 7200000).toISOString(),
-                agent: mockAgents[2],
-                content: 'Generating content briefs based on approved keyword list...',
-            },
-        ],
-        conflict: {
-            id: 'conflict-1',
-            reason: 'Multiple content formats suggested for the same topic',
-            options: [
-                {
-                    agent: mockAgents[2],
-                    description: 'Create a comprehensive long-form guide (5000+ words)',
-                    label: 'Long-form Guide',
-                    outcome: 'Higher SEO value but longer production time',
-                },
-                {
-                    agent: mockAgents[3],
-                    description: 'Create a series of shorter posts (3x 1500 words)',
-                    label: 'Blog Series',
-                    outcome: 'Faster publication but may reduce overall authority',
-                },
-            ],
-        },
-    },
-};
+// Simulated delay for API calls (ms)
+const API_DELAY = 800;
 
-export function getThread(threadId: string): Thread & { conflict?: { id: string; reason: string; options: Array<{ agent: typeof mockAgents[0]; description: string; label: string; outcome: string }> } } {
-    return mockThreads[threadId] || {
-        id: threadId,
-        title: `Thread ${threadId}`,
-        status: 'active',
-        objective: 'Thread objective description',
-        events: [],
-    };
+/**
+ * Simulates a network delay
+ */
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Get workspace by ID
+ */
+export async function getWorkspace(workspaceId: string): Promise<Workspace> {
+  await delay(API_DELAY);
+  
+  const workspace = mockWorkspaces.find(w => w.id === workspaceId);
+  
+  if (!workspace) {
+    throw new Error(`Workspace with ID ${workspaceId} not found`);
+  }
+  
+  return workspace;
 }
 
-export function updateThread(threadId: string, updates: Partial<Thread>): void {
-    if (mockThreads[threadId]) {
-        Object.assign(mockThreads[threadId], updates);
-    }
+/**
+ * Get all workspaces
+ */
+export async function getWorkspaces(): Promise<Workspace[]> {
+  await delay(API_DELAY);
+  return mockWorkspaces;
+}
+
+/**
+ * Get module data for a specific workspace
+ */
+export async function getModule(workspaceId: string, moduleSlug: string): Promise<{
+  module: Module;
+  threads: Thread[];
+  metrics: any[];
+}> {
+  await delay(API_DELAY);
+  
+  const module = mockModules.find(m => m.slug === moduleSlug);
+  
+  if (!module) {
+    throw new Error(`Module ${moduleSlug} not found`);
+  }
+  
+  let threads: Thread[] = [];
+  let metrics: any[] = [];
+  
+  // Return module-specific data
+  switch (moduleSlug) {
+    case 'seo-cluster':
+      threads = mockSEOThreads;
+      metrics = mockSEOMetrics;
+      break;
+    case 'content-factory':
+      threads = mockContentThreads;
+      metrics = mockContentMetrics;
+      break;
+    case 'social-growth':
+      threads = mockSocialThreads;
+      metrics = mockSocialMetrics;
+      break;
+    case 'saas-launch-ops':
+      threads = mockSaaSThreads;
+      metrics = mockSaaSMetrics;
+      break;
+    default:
+      threads = [];
+      metrics = [];
+  }
+  
+  return { module, threads, metrics };
+}
+
+/**
+ * Get thread detail by thread ID
+ */
+export async function getThread(threadId: string): Promise<Thread> {
+  await delay(API_DELAY);
+  
+  // Search across all module thread collections
+  const allThreads = [
+    ...mockSEOThreads,
+    ...mockContentThreads,
+    ...mockSocialThreads,
+    ...mockSaaSThreads
+  ];
+  
+  const thread = allThreads.find(t => t.id === threadId);
+  
+  if (!thread) {
+    throw new Error(`Thread with ID ${threadId} not found`);
+  }
+  
+  return thread;
+}
+
+/**
+ * Get Mission Control dashboard data
+ */
+export async function getMissionControlData(workspaceId: string) {
+  await delay(API_DELAY);
+  return mockMissionControlData;
+}
+
+/**
+ * Post a command to a thread (simulated)
+ */
+export async function postCommand(threadId: string, command: string): Promise<Event> {
+  await delay(API_DELAY);
+  
+  const newEvent: Event = {
+    id: `evt_${Date.now()}`,
+    type: 'message',
+    timestamp: new Date().toISOString(),
+    agent: {
+      id: 'user',
+      name: 'User',
+      role: 'Administrator',
+      avatar: '',
+      metrics: { accuracy: 100, latency: 0 }
+    },
+    content: command,
+    meta: { source: 'user_input' }
+  };
+  
+  return newEvent;
+}
+
+/**
+ * Get workspace settings
+ */
+export async function getWorkspaceSettings(workspaceId: string) {
+  await delay(API_DELAY);
+  return mockWorkspaceSettings;
+}
+
+/**
+ * Update workspace settings (simulated)
+ */
+export async function updateWorkspaceSettings(workspaceId: string, settings: any) {
+  await delay(API_DELAY);
+  return { success: true, settings };
 }
