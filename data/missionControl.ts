@@ -1,160 +1,139 @@
-import { Thread } from './mockData';
+// Mission Control Mock Data
+// Used for the Kanban-style Mission Control Dashboard
 
-export interface KPI {
-  id: string;
+export interface KPIChip {
   label: string;
-  value: string | number;
+  value: string;
   trend: 'up' | 'down' | 'neutral';
-  change?: string;
 }
 
-export interface KanbanItem {
-  id: string;
-  title: string;
-  status: 'inbox' | 'in-progress' | 'review' | 'blocked' | 'done';
-  priority: 'high' | 'medium' | 'low';
+export interface DomainHealth {
   domain: string;
-  assignee?: string;
+  health: number;
+  status: 'healthy' | 'warning' | 'critical';
+  threads: number;
 }
 
-export interface KanbanColumn {
+export interface AgentActivity {
   id: string;
-  title: string;
-  itemIds: string[];
+  agent: string;
+  action: string;
+  timestamp: string;
+  type: 'command' | 'resolution' | 'system';
 }
 
-export interface ActivityEvent {
-  id: string;
-  type: 'log' | 'command' | 'resolution' | 'alert';
-  message: string;
-  timestamp: Date;
-  agent?: string;
-}
+export const mockMissionControlData = {
+  // KPI / Insights Strip
+  kpis: [
+    { label: 'System Health', value: '94%', trend: 'up' },
+    { label: 'Pending Actions', value: '12', trend: 'down' },
+    { label: 'Active Agents', value: '8', trend: 'neutral' },
+    { label: 'Errors Today', value: '2', trend: 'down' },
+    { label: 'Avg Latency', value: '420ms', trend: 'neutral' },
+  ] as KPIChip[],
 
-export interface MissionControlData {
-  kpis: KPI[];
-  columns: KanbanColumn[];
-  items: KanbanItem[];
-  activities: ActivityEvent[];
-}
+  // Domain Health Chips
+  domainHealth: [
+    { domain: 'SEO_Cluster', health: 95, status: 'healthy', threads: 4 },
+    { domain: 'Content_Factory', health: 82, status: 'warning', threads: 7 },
+    { domain: 'Social_Growth', health: 98, status: 'healthy', threads: 3 },
+    { domain: 'SaaS_Launch_Ops', health: 76, status: 'warning', threads: 5 },
+  ] as DomainHealth[],
 
-export const missionControlKPIs: KPI[] = [
-  {
-    id: 'system-health',
-    label: 'System Health',
-    value: 94,
-    trend: 'up',
-    change: '+2%'
-  },
-  {
-    id: 'active-threads',
-    label: 'Active Threads',
-    value: 23,
-    trend: 'up',
-    change: '+5'
-  },
-  {
-    id: 'pending-actions',
-    label: 'Pending Actions',
-    value: 7,
-    trend: 'down',
-    change: '-3'
-  },
-  {
-    id: 'agents-active',
-    label: 'Active Agents',
-    value: 8,
-    trend: 'neutral'
-  }
-];
+  // Kanban Board Threads
+  threads: [
+    {
+      id: 'thread-1',
+      title: 'Optimize blog meta descriptions',
+      domain: 'SEO_Cluster',
+      status: 'inbox',
+      priority: 'high',
+      assignee: 'SEO_Agent',
+      createdAt: '2024-01-15T09:00:00Z',
+    },
+    {
+      id: 'thread-2',
+      title: 'Review Q1 content calendar',
+      domain: 'Content_Factory',
+      status: 'in-progress',
+      priority: 'medium',
+      assignee: 'Content_Strategist',
+      createdAt: '2024-01-14T14:30:00Z',
+    },
+    {
+      id: 'thread-3',
+      title: 'Analyze viral trends on Twitter',
+      domain: 'Social_Growth',
+      status: 'review',
+      priority: 'high',
+      assignee: 'Social_Analyst',
+      createdAt: '2024-01-15T08:15:00Z',
+    },
+    {
+      id: 'thread-4',
+      title: 'Approve launch assets',
+      domain: 'SaaS_Launch_Ops',
+      status: 'blocked',
+      priority: 'high',
+      assignee: 'Launch_Coordinator',
+      createdAt: '2024-01-13T16:45:00Z',
+    },
+    {
+      id: 'thread-5',
+      title: 'Crawl budget audit',
+      domain: 'SEO_Cluster',
+      status: 'done',
+      priority: 'medium',
+      assignee: 'Crawl_Spider',
+      createdAt: '2024-01-12T10:00:00Z',
+    },
+    {
+      id: 'thread-6',
+      title: 'Generate LinkedIn posts',
+      domain: 'Social_Growth',
+      status: 'in-progress',
+      priority: 'low',
+      assignee: 'Content_Agent',
+      createdAt: '2024-01-15T07:30:00Z',
+    },
+  ],
 
-export const missionControlColumns: KanbanColumn[] = [
-  { id: 'inbox', title: 'Inbox', itemIds: ['item-1', 'item-2'] },
-  { id: 'in-progress', title: 'In Progress', itemIds: ['item-3'] },
-  { id: 'review', title: 'Review', itemIds: ['item-4'] },
-  { id: 'blocked', title: 'Blocked', itemIds: [] },
-  { id: 'done', title: 'Done', itemIds: ['item-5'] }
-];
-
-export const missionControlItems: KanbanItem[] = [
-  {
-    id: 'item-1',
-    title: 'Crawl budget optimization',
-    status: 'inbox',
-    priority: 'high',
-    domain: 'SEO_Cluster'
-  },
-  {
-    id: 'item-2',
-    title: 'Q1 blog strategy review',
-    status: 'inbox',
-    priority: 'medium',
-    domain: 'Content_Factory'
-  },
-  {
-    id: 'item-3',
-    title: 'Viral trend analysis',
-    status: 'in-progress',
-    priority: 'high',
-    domain: 'Social_Growth'
-  },
-  {
-    id: 'item-4',
-    title: 'Go-to-market assets approval',
-    status: 'review',
-    priority: 'high',
-    domain: 'SaaS_Launch_Ops'
-  },
-  {
-    id: 'item-5',
-    title: 'Technical audit complete',
-    status: 'done',
-    priority: 'medium',
-    domain: 'Business_Audit'
-  }
-];
-
-export const missionControlActivities: ActivityEvent[] = [
-  {
-    id: 'activity-1',
-    type: 'log',
-    message: 'Crawl spider completed index scan',
-    timestamp: new Date(Date.now() - 300000),
-    agent: 'Crawl_Spider'
-  },
-  {
-    id: 'activity-2',
-    type: 'resolution',
-    message: 'Conflict resolved: Keyword priority debate',
-    timestamp: new Date(Date.now() - 600000),
-    agent: 'Tech_Lead'
-  },
-  {
-    id: 'activity-3',
-    type: 'command',
-    message: 'Command sent: Generate competitor report',
-    timestamp: new Date(Date.now() - 900000),
-    agent: 'Content_Strategist'
-  },
-  {
-    id: 'activity-4',
-    type: 'alert',
-    message: 'High latency detected in API gateway',
-    timestamp: new Date(Date.now() - 1200000),
-    agent: 'System_Monitor'
-  },
-  {
-    id: 'activity-5',
-    type: 'log',
-    message: 'Social sentiment analysis updated',
-    timestamp: new Date(Date.now() - 1500000),
-    agent: 'Sentiment_Analyzer'
-  }
-];
-
-export const missionControlData: MissionControlData = {
-  kpis: missionControlKPIs,
-  columns: missionControlColumns,
-  items: missionControlItems,
-  activities: missionControlActivities
+  // Live Agent Activity Feed
+  activities: [
+    {
+      id: 'act-1',
+      agent: 'SEO_Agent',
+      action: 'Resolved conflict on Crawl Budget thread',
+      timestamp: '2 min ago',
+      type: 'resolution',
+    },
+    {
+      id: 'act-2',
+      agent: 'Content_Strategist',
+      action: 'Updated Q1 content calendar',
+      timestamp: '5 min ago',
+      type: 'command',
+    },
+    {
+      id: 'act-3',
+      agent: 'System',
+      action: 'New high-priority thread created in SaaS_Launch_Ops',
+      timestamp: '8 min ago',
+      type: 'system',
+    },
+    {
+      id: 'act-4',
+      agent: 'Social_Analyst',
+      action: 'Completed trend analysis report',
+      timestamp: '12 min ago',
+      type: 'resolution',
+    },
+    {
+      id: 'act-5',
+      agent: 'Launch_Coordinator',
+      action: 'Requested approval for launch video',
+      timestamp: '15 min ago',
+      type: 'command',
+    },
+  ] as AgentActivity[],
 };
