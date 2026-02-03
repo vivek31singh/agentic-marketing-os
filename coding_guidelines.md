@@ -17,22 +17,34 @@ app/
       modules/
         [moduleSlug]/
           page.tsx (General Module View)
+          loading.tsx (Module Loading Boundary)
+          error.tsx (Module Error Boundary)
           [threadSlug]/
             page.tsx (Thread Detail)
+            loading.tsx (Thread Loading Boundary)
+            error.tsx (Thread Error Boundary)
         seo-cluster/
           page.tsx
+          loading.tsx
+          error.tsx
         content-factory/
           page.tsx
+          loading.tsx
+          error.tsx
         social-growth/
           page.tsx
+          loading.tsx
+          error.tsx
         saas-launch-ops/
           page.tsx
+          loading.tsx
+          error.tsx
       settings/
         page.tsx
 components/
   ui/ (Primitives: Button, Card, Badge, Avatar, ProgressBar, Tag, MetricStat, Accordion, SegmentedControl, Modal, Skeleton, EmptyState)
   layout/ (Shell parts: Sidebar, Topbar)
-  domains/ (Feature specific: AgentScorecard, ConflictPanel, Timeline)
+  domains/ (Feature specific: AgentScorecard, ConflictPanel, Timeline, KanbanBoard, BoardHeader, LiveActivityRail)
   providers/
 data/
   mockData.ts (Interfaces and Mock Data)
@@ -65,8 +77,8 @@ Files: PascalCase for components (e.g., `AgentScorecard.tsx`), camelCase for uti
 Visual Testing: Ensure pages match reference designs manually. Unit Testing: Test logic for conflict resolution and state changes using Jest/React Testing Library. E2E Testing: Use Playwright to verify critical paths (Navigation to modules, clicking 'Approve' buttons).
 
 ## Error Handling
-- **Loading States:** UI Skeletons during 'loading' states. Implemented via Next.js `loading.tsx` files which utilize the `Skeleton` component to mimic the structure of the page being loaded (e.g., MetricStats, Cards, Sidebars).
-- **Error States:** Empty State components when data is missing or runtime errors occur. Implemented via Next.js `error.tsx` files utilizing the `EmptyState` component to provide user-friendly feedback and recovery actions.
+- **Loading States:** UI Skeletons during 'loading' states. Implemented via Next.js `loading.tsx` files which utilize the `Skeleton` component to mimic the structure of the page being loaded (e.g., MetricStats, Cards, Sidebars, Timelines).
+- **Error States:** Empty State components when data is missing or runtime errors occur. Implemented via Next.js `error.tsx` files utilizing the `EmptyState` component to provide user-friendly feedback and recovery actions. This applies to all routing levels (Workspace, Modules, Threads).
 
 ## Dependencies
 next: latest, react: latest, react-dom: latest, typescript: latest, tailwindcss: latest, lucide-react: latest, clsx: latest, tailwind-merge: latest, framer-motion: latest (for smooth animations), class-variance-authority: latest.
