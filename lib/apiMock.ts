@@ -6,6 +6,7 @@ import { Thread, mockAgents } from '@/data/mockData';
 const mockThreads: Record<string, Thread & { conflict?: { id: string; reason: string; options: Array<{ agent: typeof mockAgents[0]; description: string; label: string; outcome: string }> } }> = {
     'thread-1': {
         id: 'thread-1',
+        slug: 'q1-keyword-research-technology-cluster',
         title: 'Q1 Keyword Research - Technology Cluster',
         status: 'active',
         objective: 'Identify high-value keywords for Q1 technology content strategy',
@@ -34,6 +35,7 @@ const mockThreads: Record<string, Thread & { conflict?: { id: string; reason: st
     },
     'thread-2': {
         id: 'thread-2',
+        slug: 'content-brief-generation',
         title: 'Content Brief Generation',
         status: 'active',
         objective: 'Generate comprehensive content briefs for top-priority topics',

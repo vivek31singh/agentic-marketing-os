@@ -53,11 +53,15 @@ export interface AccordionTriggerProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof accordionTriggerVariants> {
   showIcon?: boolean;
+  isOpen?: boolean;
+  onToggle?: () => void;
 }
 
 export interface AccordionContentProps
   extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof accordionContentVariants> {}
+    VariantProps<typeof accordionContentVariants> {
+  isOpen?: boolean;
+}
 
 const AccordionContext = React.createContext<{
   value?: string;
@@ -121,12 +125,15 @@ const AccordionItem = React.forwardRef<HTMLDivElement, AccordionItemProps>(
 AccordionItem.displayName = 'AccordionItem';
 
 const AccordionTrigger = React.forwardRef<HTMLButtonElement, AccordionTriggerProps>(
-  ({ className, variant, showIcon = true, isOpen, onToggle, children, ...props }, ref) => {
+  ({ className, variant, showIcon = true, isOpen, onToggle, children, onClick, ...props }, ref) => {
     return (
       <button
         ref={ref}
         className={cn(accordionTriggerVariants({ variant }), className)}
-        onClick={onToggle}
+        onClick={(e) => {
+          onToggle?.();
+          onClick?.(e);
+        }}
         {...props}
       >
         {children}
@@ -156,7 +163,7 @@ const AccordionContent = React.forwardRef<HTMLDivElement, AccordionContentProps>
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2, ease: 'easeInOut' }}
             className={cn(accordionContentVariants(), className)}
-            {...props}
+            {...(props as any)}
           >
             <motion.div
               initial={{ y: -10 }}

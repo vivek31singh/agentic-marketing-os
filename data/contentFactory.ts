@@ -86,6 +86,7 @@ const contentAgents: Agent[] = [
 export const contentThreads: ContentThread[] = [
   {
     id: 'thread-content-1',
+    slug: 'q1-blog-strategy-ai-marketing',
     title: 'Q1 Blog Strategy: AI in Marketing',
     status: 'error',
     objective: 'Create comprehensive blog series on AI applications in marketing automation',
@@ -100,6 +101,7 @@ export const contentThreads: ContentThread[] = [
   },
   {
     id: 'thread-content-2',
+    slug: 'product-launch-email-sequence',
     title: 'Product Launch Email Sequence',
     status: 'active',
     objective: 'Design and write 5-part email sequence for SaaS product launch',
@@ -133,6 +135,7 @@ export const contentThreads: ContentThread[] = [
   },
   {
     id: 'thread-content-3',
+    slug: 'social-media-campaign-spring-trends',
     title: 'Social Media Campaign: Spring Trends',
     status: 'pending',
     objective: 'Develop social media content calendar highlighting spring marketing trends',
@@ -145,6 +148,7 @@ export const contentThreads: ContentThread[] = [
   },
   {
     id: 'thread-content-4',
+    slug: 'landing-page-optimization',
     title: 'Landing Page Optimization',
     status: 'in-progress',
     objective: 'Rewrite landing page copy to improve conversion rates',
@@ -158,6 +162,7 @@ export const contentThreads: ContentThread[] = [
   },
   {
     id: 'thread-content-5',
+    slug: 'white-paper-future-automation',
     title: 'White Paper: Future of Automation',
     status: 'active',
     objective: 'Research and write white paper on automation trends',
@@ -171,6 +176,7 @@ export const contentThreads: ContentThread[] = [
   },
   {
     id: 'thread-content-6',
+    slug: 'newsletter-march-highlights',
     title: 'Newsletter: March Highlights',
     status: 'pending',
     objective: 'Compile and write monthly newsletter with product updates',

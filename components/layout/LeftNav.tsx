@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import { LucideLayoutDashboard, LucideSearch, LucideFileText, LucideShare2, LucideRocket, LucideSettings } from 'lucide-react';
-import { mockWorkspaces, type Module } from '@/data/mockData';
+import { mockWorkspacesWithModules, type WorkspaceWithModules, type Module } from '@/data/mockData';
 
 interface LeftNavProps {
   workspaceId: string;
 }
 
 export function LeftNav({ workspaceId }: LeftNavProps) {
-  const workspace = mockWorkspaces.find(w => w.id === workspaceId);
+  const workspace = mockWorkspacesWithModules.find((w: WorkspaceWithModules) => w.id === workspaceId);
   const modules = workspace?.modules || [];
 
   const getModuleIcon = (moduleName: string) => {
@@ -32,7 +32,7 @@ export function LeftNav({ workspaceId }: LeftNavProps) {
               {workspace?.name || 'Unknown'}
             </h2>
             <div className="flex items-center gap-1.5">
-              <span className={`h-1.5 w-1.5 rounded-full ${workspace?.health === 'healthy' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+              <span className={`h-1.5 w-1.5 rounded-full ${(workspace?.health ?? 0) >= 80 ? 'bg-emerald-500' : 'bg-amber-500'}`} />
               <span className="text-xs text-slate-500 dark:text-slate-400">
                 {workspace?.status || 'Active'}
               </span>

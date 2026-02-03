@@ -34,6 +34,7 @@ export const mockSEOMetrics: Metric[] = [
 export const mockSEOThreads: Thread[] = [
   {
     id: 'seo-thread-1',
+    slug: 'crawl-budget-optimization',
     title: 'Crawl Budget Optimization',
     status: 'active',
     objective: 'Analyze and optimize crawl budget for high-priority pages',
@@ -41,6 +42,7 @@ export const mockSEOThreads: Thread[] = [
   },
   {
     id: 'seo-thread-2',
+    slug: 'duplicate-content-audit',
     title: 'Duplicate Content Audit',
     status: 'pending',
     objective: 'Identify and resolve duplicate content issues across the site',
@@ -48,6 +50,7 @@ export const mockSEOThreads: Thread[] = [
   },
   {
     id: 'seo-thread-3',
+    slug: 'core-web-vitals-enhancement',
     title: 'Core Web Vitals Enhancement',
     status: 'error',
     objective: 'Improve LCP, FID, and CLS scores for mobile pages',

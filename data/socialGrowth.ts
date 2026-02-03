@@ -52,6 +52,7 @@ export const socialMetrics: Metric[] = [
 export const socialThreads: Thread[] = [
   {
     id: 'social-thread-1',
+    slug: 'viral-trend-analysis',
     title: 'Viral Trend Analysis',
     status: 'active',
     objective: 'Analyze emerging trends and identify viral content opportunities',
@@ -77,6 +78,7 @@ export const socialThreads: Thread[] = [
   },
   {
     id: 'social-thread-2',
+    slug: 'influencer-outreach-campaign',
     title: 'Influencer Outreach Campaign',
     status: 'active',
     objective: 'Identify and reach out to relevant influencers for collaboration',
@@ -84,6 +86,7 @@ export const socialThreads: Thread[] = [
   },
   {
     id: 'social-thread-3',
+    slug: 'social-sentiment-monitor',
     title: 'Social Sentiment Monitor',
     status: 'pending',
     objective: 'Monitor brand sentiment across social platforms',

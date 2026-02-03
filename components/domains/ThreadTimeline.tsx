@@ -51,7 +51,7 @@ function EventItem({ event, viewMode }: EventItemProps) {
           <Avatar
             src={event.agent?.avatar}
             alt={event.agent?.name || 'System'}
-            size="md"
+            size="lg"
           />
         </div>
 
@@ -67,7 +67,7 @@ function EventItem({ event, viewMode }: EventItemProps) {
               <Clock className="h-3 w-3" />
               {new Date(event.timestamp).toLocaleTimeString()}
             </span>
-            <Badge variant={isConflict ? 'error' : isSystem ? 'neutral' : 'success'} className="ml-auto">
+            <Badge variant={isConflict ? 'error' : isSystem ? 'default' : 'success'} className="ml-auto">
               {event.type}
             </Badge>
           </div>

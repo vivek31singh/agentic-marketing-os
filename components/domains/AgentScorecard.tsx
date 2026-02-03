@@ -24,7 +24,7 @@ export function AgentScorecard({ agent, isActive = false }: AgentScorecardProps)
   return (
     <Card className={"p-4 border-l-4 " + (isActive ? "border-l-primary" : "border-l-transparent")}>
       <div className="flex items-start gap-3">
-        <Avatar src={avatar} alt={name} size="md" />
+        <Avatar src={avatar} alt={name} size="lg" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="font-semibold text-sm text-foreground truncate">{name}</h3>
@@ -45,15 +45,17 @@ export function AgentScorecard({ agent, isActive = false }: AgentScorecardProps)
         <MetricStat
           label="Accuracy"
           value={`${metrics.accuracy}%`}
-          icon={<Activity className="h-4 w-4" />}
-          trend={metrics.accuracy >= 90 ? "positive" : metrics.accuracy >= 70 ? "neutral" : "negative"}
+          icon={Activity}
+          change={metrics.accuracy}
+          changeType="percentage"
           size="sm"
         />
         <MetricStat
           label="Latency"
           value={`${metrics.latency}ms`}
-          icon={<Zap className="h-4 w-4" />}
-          trend={metrics.latency <= 500 ? "positive" : metrics.latency <= 1000 ? "neutral" : "negative"}
+          icon={Zap}
+          change={metrics.latency <= 500 ? 100 : metrics.latency <= 1000 ? 0 : -100}
+          changeType="percentage"
           size="sm"
         />
       </div>

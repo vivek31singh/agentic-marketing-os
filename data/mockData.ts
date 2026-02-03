@@ -34,11 +34,13 @@ export interface Conflict {
 
 export interface Thread {
   id: string;
+  slug: string;
   title: string;
   status: string;
   objective: string;
   events: Event[];
   conflict?: Conflict;
+  meta?: Record<string, unknown>;
 }
 
 export interface Workspace {
