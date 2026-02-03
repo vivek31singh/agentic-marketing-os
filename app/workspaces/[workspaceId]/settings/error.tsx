@@ -1,7 +1,8 @@
 'use client';
 
 import { EmptyState } from '@/components/ui/EmptyState';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 export default function SettingsError({
   error,
@@ -15,19 +16,13 @@ export default function SettingsError({
       <EmptyState
         icon={<AlertCircle className="w-12 h-12 text-error" />}
         title="Failed to Load Settings"
-        description="We encountered an error while loading the workspace settings. This could be due to a temporary network issue or a configuration problem."
-        actions={[
-          {
-            label: 'Try Again',
-            onClick: reset,
-            variant: 'primary',
-          },
-          {
-            label: 'Go to Dashboard',
-            onClick: () => (window.location.href = '/workspaces/[workspaceId]'),
-            variant: 'outline',
-          },
-        ]}
+        description="We encountered an error while loading your workspace settings. Please try again or contact support if the problem persists."
+        action={
+          <Button onClick={reset} variant="default">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Retry
+          </Button>
+        }
       />
     </div>
   );
