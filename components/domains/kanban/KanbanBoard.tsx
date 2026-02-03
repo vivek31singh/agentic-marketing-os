@@ -1,77 +1,64 @@
-import { cn } from "@/lib/utils";
+import React from 'react';
+import { cn } from '@/lib/utils';
+import { KanbanCard } from './KanbanCard';
+import type { Thread } from '@/data/mockData';
 
-export interface KanbanColumn {
-  id: string;
-  title: string;
-  status: string;
-  count: number;
+export interface KanbanBoardProps {
+  items?: Thread[];
 }
 
-export interface KanbanItem {
-  id: string;
-  title: string;
-  domain: string;
-  priority: "high" | "medium" | "low";
-  status: string;
-}
+const columns = [
+  { id: 'inbox', label: 'Inbox', color: 'slate' },
+  { id: 'in-progress', label: 'In Progress', color: 'blue' },
+  { id: 'review', label: 'Review', color: 'amber' },
+  { id: 'blocked', label: 'Blocked', color: 'rose' },
+  { id: 'done', label: 'Done', color: 'emerald' },
+] as const;
 
-interface KanbanBoardProps {
-  columns: KanbanColumn[];
-  items: KanbanItem[];
-}
-
-export function KanbanBoard({ columns, items }: KanbanBoardProps) {
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({ items = [] }) => {
   return (
     <div className="flex gap-4 overflow-x-auto pb-4">
       {columns.map((column) => {
-        const columnItems = items.filter((item) => item.status === column.id);
+        const columnItems = items.filter((item) => 
+          item.status?.toLowerCase().replace(/\s+/g, '-') === column.id ||
+          item.status?.toLowerCase() === column.id.replace(/-/g, ' ')
+        );
+
+        const colorClasses = {
+          slate: 'bg-slate-50 border-slate-200',
+          blue: 'bg-blue-50 border-blue-200',
+          amber: 'bg-amber-50 border-amber-200',
+          rose: 'bg-rose-50 border-rose-200',
+          emerald: 'bg-emerald-50 border-emerald-200',
+        };
+
         return (
           <div
             key={column.id}
             className={cn(
-              "flex-shrink-0 w-80 bg-white rounded-lg border border-slate-200 p-4"
+              'flex-shrink-0 w-72 rounded-lg border p-3',
+              colorClasses[column.color]
             )}
           >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-slate-800">{column.title}</h3>
-              <span className={cn(
-                "px-2 py-1 text-xs font-medium rounded-full",
-                column.id === "inbox" && "bg-slate-100 text-slate-600",
-                column.id === "in-progress" && "bg-blue-50 text-blue-600",
-                column.id === "review" && "bg-amber-50 text-amber-600",
-                column.id === "blocked" && "bg-rose-50 text-rose-600",
-                column.id === "done" && "bg-emerald-50 text-emerald-600"
-              )}>
-                {column.count}
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="font-semibold text-slate-700">{column.label}</h3>
+              <span className="rounded-full bg-white px-2 py-0.5 text-xs font-medium text-slate-600 shadow-sm">
+                {columnItems.length}
               </span>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {columnItems.map((item) => (
                 <KanbanCard key={item.id} item={item} />
               ))}
+              {columnItems.length === 0 && (
+                <div className="py-8 text-center text-sm text-slate-400">
+                  No items
+                </div>
+              )}
             </div>
           </div>
         );
       })}
     </div>
   );
-}
-
-function KanbanCard({ item }: { item: KanbanItem }) {
-  return (
-    <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer">
-      <div className="flex items-start justify-between mb-2">
-        <span className={cn(
-          "px-2 py-0.5 text-xs font-medium rounded",
-          item.priority === "high" && "bg-rose-100 text-rose-700",
-          item.priority === "medium" && "bg-amber-100 text-amber-700",
-          item.priority === "low" && "bg-slate-100 text-slate-600"
-        )}>
-          {item.priority}
-        </span>
-        <span className="text-xs text-slate-400">{item.domain}</span>
-      </div>
-      <p className="text-sm font-medium text-slate-800">{item.title}</p>
-    </div>
-  );
-}
+};
