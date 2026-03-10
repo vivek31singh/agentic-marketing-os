@@ -23,7 +23,7 @@ export default function AdsExecutionPage() {
                     <div className="flex-1">
                         <h3 className="font-semibold text-error-900">Budget Threshold Alert</h3>
                         <p className="text-sm text-error-700 mt-1">
-                            "Performance_Bot" recommends shifting $500 from Facebook Retargeting to TikTok Top-of-Funnel due to a 34% drop in FB ROAS.
+                            &quot;Performance_Bot&quot; recommends shifting $500 from Facebook Retargeting to TikTok Top-of-Funnel due to a 34% drop in FB ROAS.
                         </p>
                         <div className="mt-3 flex gap-2">
                             <Button size="sm" variant="error">Approve Pivot</Button>

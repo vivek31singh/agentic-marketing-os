@@ -1,18 +1,17 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { getWorkspace } from '@/lib/apiMock';
-import { Settings as SettingsIcon, Save, ExternalLink, Shield, Zap, AlertCircle } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Shield, Zap, AlertCircle } from 'lucide-react';
 
-interface SettingsPageProps {
-  workspaceId: string;
-}
-
-export default function SettingsPage({ workspaceId }: SettingsPageProps) {
+export default function SettingsPage() {
+  const params = useParams();
+  const workspaceId = params.workspaceId as string;
   const [loading, setLoading] = useState(true);
   const [workspace, setWorkspace] = useState<any>(null);
   const [saving, setSaving] = useState(false);
@@ -83,31 +82,28 @@ export default function SettingsPage({ workspaceId }: SettingsPageProps) {
       <div className="flex gap-2 border-b border-border">
         <button
           onClick={() => setActiveTab('general')}
-          className={`px-4 py-2 border-b-2 transition-colors ${
-            activeTab === 'general'
+          className={`px-4 py-2 border-b-2 transition-colors ${activeTab === 'general'
               ? 'border-primary text-foreground font-medium'
               : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}
+            }`}
         >
           General
         </button>
         <button
           onClick={() => setActiveTab('integrations')}
-          className={`px-4 py-2 border-b-2 transition-colors ${
-            activeTab === 'integrations'
+          className={`px-4 py-2 border-b-2 transition-colors ${activeTab === 'integrations'
               ? 'border-primary text-foreground font-medium'
               : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}
+            }`}
         >
           Integrations
         </button>
         <button
           onClick={() => setActiveTab('guardrails')}
-          className={`px-4 py-2 border-b-2 transition-colors ${
-            activeTab === 'guardrails'
+          className={`px-4 py-2 border-b-2 transition-colors ${activeTab === 'guardrails'
               ? 'border-primary text-foreground font-medium'
               : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}
+            }`}
         >
           Guardrails
         </button>

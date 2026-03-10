@@ -60,7 +60,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [rightRailOpen, setRightRailOpen] = useState(true);
 
-  const workspace = workspaces.find(w => w.id === workspaceId) || workspaces[0];
+  const workspace = workspaces.workspaces.find(w => w.id === workspaceId) || workspaces.workspaces[0];
 
   const modules = [
     { id: 'mission-control', name: 'Mission Control', icon: LayoutDashboard, path: `/workspaces/${workspaceId}/mission-control`, activeThreads: 12 },

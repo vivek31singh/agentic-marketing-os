@@ -3,18 +3,61 @@
 @tailwind utilities;
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #f8fafc; /* Slate 50 */
+  --foreground: #0f172a; /* Slate 900 */
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: inherit; /* Inherit from next/font */
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/* Chat message markdown styling */
+.system-message-markdown .prose,
+.agent-message-markdown .prose {
+  margin: 0;
+}
+
+.system-message-markdown .prose p,
+.system-message-markdown .prose strong,
+.system-message-markdown .prose em {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.agent-message-markdown .prose p:first-child {
+  margin-top: 0;
+}
+
+.agent-message-markdown .prose p:last-child {
+  margin-bottom: 0;
+}
+
+/* Inline markdown in system messages */
+.system-message-markdown .prose strong {
+  color: theme('colors.slate.700');
+}
+
+.system-message-markdown .prose em {
+  font-style: italic;
+}
+
+/* Agent message markdown enhancements */
+.agent-message-markdown .prose strong {
+  color: theme('colors.slate.900');
+}
+
+.agent-message-markdown .prose code {
+  background: theme('colors.slate.100');
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
 }

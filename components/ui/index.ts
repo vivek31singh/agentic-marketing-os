@@ -7,3 +7,4 @@ export { Avatar, avatarVariants, type AvatarProps } from './Avatar';
 export { ProgressBar, progressBarVariants, type ProgressBarProps } from './ProgressBar';
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent, type AccordionProps, type AccordionItemProps, type AccordionTriggerProps, type AccordionContentProps } from './Accordion';
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './Tooltip';
+export { default as Notification, type NotificationVariant, type NotificationProps } from './Notification';

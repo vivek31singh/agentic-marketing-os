@@ -4,13 +4,16 @@ import { LucideIcon } from "lucide-react"
 import { Button } from "./Button"
 
 export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
-  icon?: LucideIcon
+  icon?: LucideIcon | React.ReactNode
   title: string
-  description?: string
-  action?: {
+  description?: string | React.ReactNode
+  action?: React.ReactNode | {
     label: string
     onClick: () => void
+    variant?: "default" | "outline" | "ghost" | "link" | "destructive" | "secondary" | "primary"
   }
+  variant?: string // Allow variant formatting prop (even if unused, to suppress errors)
+  actions?: React.ReactNode // Alias for action or multiple actions
   size?: "sm" | "md" | "lg"
 }
 
@@ -31,6 +34,8 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
       lg: "h-16 w-16",
     }
 
+    const isIconElement = React.isValidElement(Icon);
+
     return (
       <div
         ref={ref}
@@ -42,8 +47,13 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
         {...props}
       >
         {Icon && (
-          <div className={cn("mb-4 text-neutral-400", iconSize[size])}>
-            <Icon className={iconSize[size]} strokeWidth={1.5} />
+          <div className={cn("mb-4 text-neutral-400", isIconElement ? "" : iconSize[size])}>
+            {isIconElement ? (
+              Icon
+            ) : (
+              // @ts-ignore
+              <Icon className={iconSize[size]} strokeWidth={1.5} />
+            )}
           </div>
         )}
         <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
@@ -56,9 +66,15 @@ const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
         )}
         {action && (
           <div className="mt-6">
-            <Button onClick={action.onClick} variant="primary">
-              {action.label}
-            </Button>
+            {React.isValidElement(action) ? (
+              action
+            ) : (
+              // @ts-ignore
+              <Button onClick={action.onClick} variant="primary">
+                {/* @ts-ignore */}
+                {action.label}
+              </Button>
+            )}
           </div>
         )}
       </div>

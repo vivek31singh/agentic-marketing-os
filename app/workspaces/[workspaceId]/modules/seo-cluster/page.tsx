@@ -2,19 +2,19 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { MetricStat } from '@/components/ui/MetricStat';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { getModule } from '@/lib/apiMock';
+import { MetricsGrid } from '@/components/common/MetricsGrid';
 import { Search, TrendingUp, AlertCircle, CheckCircle, ArrowRight } from 'lucide-react';
 
-interface SEOClusterPageProps {
-  workspaceId: string;
-  moduleSlug: string;
-}
-
-export default function SEOClusterPage({ workspaceId, moduleSlug }: SEOClusterPageProps) {
+export default function SEOClusterPage() {
+  const params = useParams();
+  const workspaceId = params.workspaceId as string;
+  const moduleSlug = params.moduleSlug as string;
   const [loading, setLoading] = useState(true);
   const [moduleData, setModuleData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,16 +37,32 @@ export default function SEOClusterPage({ workspaceId, moduleSlug }: SEOClusterPa
   if (loading) {
     return (
       <div className="p-6 space-y-6">
-        <div className="h-16 bg-muted animate-pulse rounded" />
-        <div className="grid grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-20 bg-muted animate-pulse rounded" />
-          ))}
+        {/* Header Skeleton */}
+        <div className="space-y-2">
+          <div className="h-8 w-48 bg-slate-100 animate-pulse rounded" />
+          <div className="h-4 w-96 bg-slate-50 animate-pulse rounded" />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-32 bg-muted animate-pulse rounded" />
-          ))}
+
+        {/* Metrics Grid Skeleton */}
+        <MetricsGrid.Skeleton />
+
+        {/* Threads Grid Skeleton */}
+        <div className="space-y-4">
+          <div className="h-6 w-32 bg-slate-100 animate-pulse rounded" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-32 rounded-xl border border-slate-200 bg-white p-4 space-y-4">
+                <div className="flex justify-between">
+                  <div className="h-6 w-3/4 bg-slate-100 animate-pulse rounded" />
+                  <div className="h-6 w-16 bg-slate-100 animate-pulse rounded-full" />
+                </div>
+                <div className="pt-2 flex justify-between items-center">
+                  <div className="h-4 w-24 bg-slate-50 animate-pulse rounded" />
+                  <div className="h-4 w-4 bg-slate-100 animate-pulse rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -84,33 +100,36 @@ export default function SEOClusterPage({ workspaceId, moduleSlug }: SEOClusterPa
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricStat
-          label="Crawl Health"
-          value={`${metrics?.crawlHealth || 94}%`}
-          trend={+2.5}
-          icon={<Search className="h-4 w-4" />}
-        />
-        <MetricStat
-          label="Indexed Pages"
-          value={metrics?.indexedPages?.toLocaleString() || '2,847'}
-          trend={+5.2}
-          icon={<TrendingUp className="h-4 w-4" />}
-        />
-        <MetricStat
-          label="Organic Traffic"
-          value={metrics?.organicTraffic || '45.2K'}
-          trend={+8.1}
-          icon={<TrendingUp className="h-4 w-4" />}
-        />
-        <MetricStat
-          label="Technical Issues"
-          value={metrics?.technicalIssues || 12}
-          trend={-15}
-          icon={<AlertCircle className="h-4 w-4" />}
-          inverseTrend
-        />
-      </div>
+      <MetricsGrid metrics={[
+        {
+          label: "Crawl Health",
+          value: `${(Array.isArray(metrics) ? metrics.find((m: any) => m.label === 'Crawl Health')?.value : 94)}%`,
+          change: +2.5,
+          icon: Search,
+          intent: "emerald"
+        },
+        {
+          label: "Indexed Pages",
+          value: (Array.isArray(metrics) ? metrics.find((m: any) => m.label === 'Indexed Pages')?.value : 2847)?.toLocaleString() || '2,847',
+          change: +5.2,
+          icon: TrendingUp,
+          intent: "sky"
+        },
+        {
+          label: "Organic Traffic",
+          value: '45.2K', // Missing in mock data fallback
+          change: +8.1,
+          icon: TrendingUp,
+          intent: "indigo"
+        },
+        {
+          label: "Technical Issues",
+          value: Array.isArray(metrics) ? metrics.find((m: any) => m.label === 'Technical Issues')?.value : 12,
+          change: -15,
+          icon: AlertCircle,
+          intent: "rose"
+        }
+      ]} />
 
       {/* Active Threads Grid */}
       <div>

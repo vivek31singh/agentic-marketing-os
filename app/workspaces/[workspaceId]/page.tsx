@@ -27,7 +27,7 @@ async function WorkspaceContent({ workspaceId }: { workspaceId: string }) {
             Workspace ID: {workspace.id}
           </p>
         </div>
-        <Badge 
+        <Badge
           variant={workspace.status === 'active' ? 'success' : 'warning'}
           withDot
         >
@@ -40,19 +40,21 @@ async function WorkspaceContent({ workspaceId }: { workspaceId: string }) {
         <MetricStat
           label="System Health"
           value={`${workspace.health}%`}
-          trend={{ value: '+2%', positive: true }}
+          change={2}
+          changeType="percentage"
           icon={<Activity className="w-5 h-5" />}
         />
         <MetricStat
           label="Active Threads"
           value="12"
-          trend={{ value: '+4', positive: true }}
+          change={4}
+          changeType="absolute"
           icon={<Zap className="w-5 h-5" />}
         />
         <MetricStat
           label="Active Agents"
           value="8"
-          trend={{ value: 'stable', positive: true }}
+          change={0}
           icon={<Users className="w-5 h-5" />}
         />
       </div>

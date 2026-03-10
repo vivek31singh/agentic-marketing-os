@@ -1,14 +1,24 @@
 // Core Data Interfaces
 
+export interface AgentMetrics {
+  accuracy: number;
+  latency: number;
+}
+
+export interface Metric {
+  id: string;
+  label: string;
+  value: number | string;
+  trend?: string;
+  status?: 'success' | 'warning' | 'error' | 'neutral';
+}
+
 export interface Agent {
   id: string;
   name: string;
   role: string;
   avatar: string;
-  metrics: {
-    accuracy: number;
-    latency: number;
-  };
+  metrics: AgentMetrics;
 }
 
 export interface Event {
@@ -35,11 +45,15 @@ export interface Conflict {
 
 export interface Thread {
   id: string;
+  slug?: string;
   title: string;
   status: string;
   objective: string;
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
   events: Event[];
   conflicts?: Conflict[];
+  conflict?: Conflict;
+  meta?: Record<string, any>;
 }
 
 export interface Module {
@@ -56,6 +70,8 @@ export interface Workspace {
   health: number;
   modules?: Module[];
 }
+
+export type WorkspaceWithModules = Workspace;
 
 // Mock Agents
 export const mockAgents: Record<string, Agent> = {
@@ -160,5 +176,7 @@ export const workspaces = {
     },
   ],
 };
+
+export const mockWorkspacesWithModules = workspaces.workspaces;
 
 export default workspaces;

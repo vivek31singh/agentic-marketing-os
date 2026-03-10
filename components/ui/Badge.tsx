@@ -3,10 +3,10 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 // Define the variant type explicitly
-export type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info' | 'outline' | 'ghost';
+export type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info' | 'outline' | 'ghost' | 'neutral' | 'secondary';
 
 const badgeVariants = cva(
-  'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
+  'inline-flex items-center rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2',
   {
     variants: {
       variant: {
@@ -26,10 +26,21 @@ const badgeVariants = cva(
           'bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500',
         ghost:
           'bg-transparent text-gray-600 hover:bg-gray-100 focus:ring-gray-500',
+        neutral:
+          'bg-gray-100 text-gray-600 hover:bg-gray-200 focus:ring-gray-500',
+        secondary:
+          'bg-gray-100 text-gray-900 hover:bg-gray-200/80',
       },
+      size: {
+        default: 'px-2.5 py-0.5 text-xs',
+        sm: 'px-2 py-0.5 text-xs',
+        md: 'px-2.5 py-0.5 text-sm',
+        lg: 'px-3 py-1 text-sm',
+      }
     },
     defaultVariants: {
       variant: 'default',
+      size: 'default',
     },
   }
 );
@@ -50,6 +61,8 @@ const dotColorMap: Record<BadgeVariant, string> = {
   info: 'bg-blue-500',
   outline: 'bg-gray-400',
   ghost: 'bg-gray-400',
+  neutral: 'bg-gray-400',
+  secondary: 'bg-gray-500',
 };
 
 const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(

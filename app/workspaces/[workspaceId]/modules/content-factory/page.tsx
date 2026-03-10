@@ -2,23 +2,32 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { MetricStat } from '@/components/ui/MetricStat';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { getModule } from '@/lib/apiMock';
+import { MetricsGrid } from '@/components/common/MetricsGrid';
 import { FileText, Clock, TrendingUp, CheckCircle, AlertCircle, ArrowRight } from 'lucide-react';
+import { QuickActionButton } from '@/components/content-factory';
 
-interface ContentFactoryPageProps {
-  workspaceId: string;
-  moduleSlug: string;
-}
-
-export default function ContentFactoryPage({ workspaceId, moduleSlug }: ContentFactoryPageProps) {
+export default function ContentFactoryPage() {
+  const params = useParams();
+  const workspaceId = params.workspaceId as string;
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [moduleData, setModuleData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Redirect if workspaceId is not available
+  useEffect(() => {
+    if (!workspaceId || workspaceId === 'undefined') {
+      router.push('/workspaces');
+    }
+  }, [workspaceId, router]);
+
+  // Fetch module data - must be before any conditional returns
   useEffect(() => {
     async function fetchData() {
       try {
@@ -34,19 +43,44 @@ export default function ContentFactoryPage({ workspaceId, moduleSlug }: ContentF
     fetchData();
   }, [workspaceId]);
 
+  // Don't render if workspaceId is not available - AFTER all hooks
+  if (!workspaceId || workspaceId === 'undefined') {
+    return null;
+  }
+
   if (loading) {
     return (
       <div className="p-6 space-y-6">
-        <div className="h-16 bg-muted animate-pulse rounded" />
-        <div className="grid grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-20 bg-muted animate-pulse rounded" />
-          ))}
+        {/* Header Skeleton */}
+        <div className="space-y-2">
+          <div className="h-8 w-48 bg-slate-100 animate-pulse rounded" />
+          <div className="h-4 w-96 bg-slate-50 animate-pulse rounded" />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-32 bg-muted animate-pulse rounded" />
-          ))}
+
+        {/* Metrics Grid Skeleton */}
+        <MetricsGrid.Skeleton />
+
+        {/* Threads Grid Skeleton */}
+        <div className="space-y-4">
+          <div className="h-6 w-32 bg-slate-100 animate-pulse rounded" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-40 rounded-xl border border-slate-200 bg-white p-4 space-y-4">
+                <div className="flex justify-between">
+                  <div className="h-6 w-3/4 bg-slate-100 animate-pulse rounded" />
+                  <div className="h-6 w-16 bg-slate-100 animate-pulse rounded-full" />
+                </div>
+                <div className="space-y-2">
+                  <div className="h-4 w-full bg-slate-50 animate-pulse rounded" />
+                  <div className="h-4 w-2/3 bg-slate-50 animate-pulse rounded" />
+                </div>
+                <div className="pt-4 flex justify-between items-center">
+                  <div className="h-4 w-24 bg-slate-50 animate-pulse rounded" />
+                  <div className="h-4 w-4 bg-slate-100 animate-pulse rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -75,42 +109,46 @@ export default function ContentFactoryPage({ workspaceId, moduleSlug }: ContentF
           <h1 className="text-2xl font-bold mb-1">Content Factory</h1>
           <p className="text-muted-foreground">AI-powered content creation and optimization</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <Badge variant="outline" className="flex items-center gap-1">
             <CheckCircle className="h-3 w-3" />
             Active
           </Badge>
+          <QuickActionButton workspaceId={workspaceId} />
         </div>
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricStat
-          label="Content Velocity"
-          value={`${metrics?.contentVelocity || '12.5'} articles/week`}
-          trend={+15}
-          icon={<FileText className="h-4 w-4" />}
-        />
-        <MetricStat
-          label="Pending Approval"
-          value={metrics?.pendingApproval || 8}
-          trend={-20}
-          icon={<Clock className="h-4 w-4" />}
-          inverseTrend
-        />
-        <MetricStat
-          label="Engagement Score"
-          value={`${metrics?.engagementScore || 87}/100`}
-          trend={+5.3}
-          icon={<TrendingUp className="h-4 w-4" />}
-        />
-        <MetricStat
-          label="Published This Month"
-          value={metrics?.publishedThisMonth || 34}
-          trend={+12}
-          icon={<CheckCircle className="h-4 w-4" />}
-        />
-      </div>
+      <MetricsGrid metrics={[
+        {
+          label: "Content Velocity",
+          value: `${metrics?.contentVelocity?.current ?? '12.5'} articles/week`,
+          change: +15,
+          icon: FileText,
+          intent: "sky"
+        },
+        {
+          label: "Pending Approval",
+          value: metrics?.pendingApproval || 8,
+          change: -20,
+          icon: Clock,
+          intent: "indigo"
+        },
+        {
+          label: "Engagement Score",
+          value: `${metrics?.engagementScore || 87}/100`,
+          change: +5.3,
+          icon: TrendingUp,
+          intent: "emerald"
+        },
+        {
+          label: "Published This Month",
+          value: metrics?.publishedThisMonth || 34,
+          change: +12,
+          icon: CheckCircle,
+          intent: "emerald"
+        }
+      ]} />
 
       {/* Active Threads Grid */}
       <div>

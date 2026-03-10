@@ -38,7 +38,7 @@ export function WorkspaceSwitcher() {
                 <div className="w-8 h-[2px] bg-neutral-800 rounded-full mx-auto my-1" />
 
                 {/* Workspaces List */}
-                {workspaces.map((workspace) => (
+                {workspaces.workspaces.map((workspace) => (
                     <Link key={workspace.id} href={`/workspaces/${workspace.id}/mission-control`}>
                         <WorkspaceButton
                             label={workspace.name}

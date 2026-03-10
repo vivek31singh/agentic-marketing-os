@@ -1,2 +1,22 @@
 node_modules
 .next
+
+# Documentation and planning folders (internal use)
+docs/
+plans/
+
+# Environment files with secrets
+.env
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# TypeScript build cache
+*.tsbuildinfo

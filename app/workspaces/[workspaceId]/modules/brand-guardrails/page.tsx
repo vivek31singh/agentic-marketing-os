@@ -48,7 +48,7 @@ export default function BrandGuardrailsPage() {
                     <div className="flex flex-wrap gap-2">
                         {['cheap', 'guaranteed', 'best in world', 'disruptor', 'ninja'].map((word) => (
                             <Badge key={word} variant="outline" className="bg-white">
-                                "{word}"
+                                &quot;{word}&quot;
                             </Badge>
                         ))}
                     </div>
@@ -62,7 +62,7 @@ export default function BrandGuardrailsPage() {
                 <Eye className="w-12 h-12 text-primary-400" />
                 <h2 className="text-xl font-semibold">Real-time Watcher</h2>
                 <p className="text-neutral-400 max-w-sm">
-                    "Brand_Guard" is silent-monitoring 14 active threads for tone shifts or policy violations.
+                    &quot;Brand_Guard&quot; is silent-monitoring 14 active threads for tone shifts or policy violations.
                 </p>
             </Card>
         </div>

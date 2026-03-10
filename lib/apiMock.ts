@@ -1,10 +1,10 @@
 import { Workspace, Module, Thread, Agent, Event } from '@/data/mockData';
 import workspaces from '@/data/mockData';
-import missionControlData from '@/data/missionControl';
+import { mockMissionControlData as missionControlData } from '@/data/missionControl';
 import { mockSEOThreads, mockSEOMetrics } from '@/data/seoCluster';
-import { contentThreads, contentMetrics } from '@/data/contentFactory';
+import { contentThreads, contentFactoryMetrics } from '@/data/contentFactory';
 import { socialThreads, socialMetrics } from '@/data/socialGrowth';
-import { saasThreads, saasMetrics } from '@/data/saasLaunchOps';
+import { saasLaunchOpsThreads, saasLaunchOpsMetrics } from '@/data/saasLaunchOps';
 
 // Helper function to simulate network delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -40,39 +40,39 @@ export async function getModule(id: string): Promise<Module & { metrics?: any; t
   await randomDelay(900, 1400);
   
   // Find the module in mockData
-  const module = workspaces.workspaces[0]?.modules.find(m => m.id === id);
+  const moduleData = workspaces.workspaces[0]?.modules.find(m => m.id === id);
   
-  if (!module) {
+  if (!moduleData) {
     throw new Error(`Module with id "${id}" not found`);
   }
 
   // Add module-specific data based on the module ID
-  let moduleData: any = { ...module };
+  let result: any = { ...moduleData };
   
   switch (id) {
     case 'SEO_Cluster':
-      moduleData.metrics = mockSEOMetrics;
-      moduleData.threads = mockSEOThreads;
+      result.metrics = mockSEOMetrics;
+      result.threads = mockSEOThreads;
       break;
     case 'Content_Factory':
-      moduleData.metrics = contentMetrics;
-      moduleData.threads = contentThreads;
+      result.metrics = contentFactoryMetrics;
+      result.threads = contentThreads;
       break;
     case 'Social_Growth':
-      moduleData.metrics = socialMetrics;
-      moduleData.threads = socialThreads;
+      result.metrics = socialMetrics;
+      result.threads = socialThreads;
       break;
     case 'SaaS_Launch_Ops':
-      moduleData.metrics = saasMetrics;
-      moduleData.threads = saasThreads;
+      result.metrics = saasLaunchOpsMetrics;
+      result.threads = saasLaunchOpsThreads;
       break;
     default:
       // Generic module data
-      moduleData.metrics = {};
-      moduleData.threads = [];
+      result.metrics = {};
+      result.threads = [];
   }
   
-  return moduleData;
+  return result;
 }
 
 /**
@@ -88,7 +88,7 @@ export async function getThread(id: string): Promise<Thread> {
     ...mockSEOThreads,
     ...contentThreads,
     ...socialThreads,
-    ...saasThreads
+    ...saasLaunchOpsThreads
   ];
   
   const thread = allThreads.find(t => t.id === id);
@@ -97,7 +97,8 @@ export async function getThread(id: string): Promise<Thread> {
     throw new Error(`Thread with id "${id}" not found`);
   }
   
-  return thread;
+  // Type assertion to handle different thread types in mock data
+  return thread as Thread;
 }
 
 /**

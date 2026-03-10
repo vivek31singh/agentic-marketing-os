@@ -14,6 +14,11 @@ export interface DomainHealth {
   threads: number;
 }
 
+export interface KanbanColumn {
+  id: string;
+  title: string;
+}
+
 export interface AgentActivity {
   id: string;
   agent: string;
@@ -24,7 +29,7 @@ export interface AgentActivity {
 
 export const mockMissionControlData = {
   // KPI / Insights Strip
-  kpis: [
+  stats: [
     { label: 'System Health', value: '94%', trend: 'up' },
     { label: 'Pending Actions', value: '12', trend: 'down' },
     { label: 'Active Agents', value: '8', trend: 'neutral' },
@@ -40,100 +45,127 @@ export const mockMissionControlData = {
     { domain: 'SaaS_Launch_Ops', health: 76, status: 'warning', threads: 5 },
   ] as DomainHealth[],
 
+  // Kanban Columns
+  columns: [
+    { id: 'inbox', title: 'Inbox' },
+    { id: 'in-progress', title: 'In Progress' },
+    { id: 'review', title: 'Review' },
+    { id: 'blocked', title: 'Blocked' },
+    { id: 'done', title: 'Done' },
+  ] as KanbanColumn[],
+
   // Kanban Board Threads
-  threads: [
+  items: [
     {
       id: 'thread-1',
       title: 'Optimize blog meta descriptions',
-      domain: 'SEO_Cluster',
+      slug: 'SEO_Cluster',
       status: 'inbox',
       priority: 'high',
       assignee: 'SEO_Agent',
       createdAt: '2024-01-15T09:00:00Z',
+      events: []
     },
     {
       id: 'thread-2',
       title: 'Review Q1 content calendar',
-      domain: 'Content_Factory',
+      slug: 'Content_Factory',
       status: 'in-progress',
       priority: 'medium',
       assignee: 'Content_Strategist',
       createdAt: '2024-01-14T14:30:00Z',
+      events: []
     },
     {
       id: 'thread-3',
       title: 'Analyze viral trends on Twitter',
-      domain: 'Social_Growth',
+      slug: 'Social_Growth',
       status: 'review',
       priority: 'high',
       assignee: 'Social_Analyst',
       createdAt: '2024-01-15T08:15:00Z',
+      events: []
     },
     {
       id: 'thread-4',
       title: 'Approve launch assets',
-      domain: 'SaaS_Launch_Ops',
+      slug: 'SaaS_Launch_Ops',
       status: 'blocked',
       priority: 'high',
       assignee: 'Launch_Coordinator',
       createdAt: '2024-01-13T16:45:00Z',
+      events: []
     },
     {
       id: 'thread-5',
       title: 'Crawl budget audit',
-      domain: 'SEO_Cluster',
+      slug: 'SEO_Cluster',
       status: 'done',
       priority: 'medium',
       assignee: 'Crawl_Spider',
       createdAt: '2024-01-12T10:00:00Z',
+      events: [{ timestamp: '2024-01-12T10:00:00Z' }]
     },
     {
       id: 'thread-6',
       title: 'Generate LinkedIn posts',
-      domain: 'Social_Growth',
+      slug: 'Social_Growth',
       status: 'in-progress',
       priority: 'low',
       assignee: 'Content_Agent',
       createdAt: '2024-01-15T07:30:00Z',
+      events: []
     },
   ],
 
+  // Active Agents for System Intelligence
+  activeAgents: [
+    { name: 'SEO_Lead', status: 'active' },
+    { name: 'Content_Writer', status: 'active' },
+    { name: 'Social_Manager', status: 'idle' },
+    { name: 'Launch_Coord', status: 'idle' },
+  ],
+
   // Live Agent Activity Feed
-  activities: [
+  liveActivity: [
     {
       id: 'act-1',
-      agent: 'SEO_Agent',
-      action: 'Resolved conflict on Crawl Budget thread',
-      timestamp: '2 min ago',
       type: 'resolution',
+      timestamp: new Date(Date.now() - 1000 * 60 * 2).toISOString(), // 2 mins ago
+      agent: { name: 'SEO_Agent', role: 'Optimizer', avatar: 'S' },
+      content: 'Resolved conflict on Crawl Budget thread',
+      meta: { domain: 'SEO_Cluster' }
     },
     {
       id: 'act-2',
-      agent: 'Content_Strategist',
-      action: 'Updated Q1 content calendar',
-      timestamp: '5 min ago',
-      type: 'command',
+      type: 'message', // Changed from command to message/system/etc based on types
+      timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+      agent: { name: 'Content_Strat', role: 'Strategist', avatar: 'C' },
+      content: 'Updated Q1 content calendar',
+      meta: { domain: 'Content' }
     },
     {
       id: 'act-3',
-      agent: 'System',
-      action: 'New high-priority thread created in SaaS_Launch_Ops',
-      timestamp: '8 min ago',
       type: 'system',
+      timestamp: new Date(Date.now() - 1000 * 60 * 8).toISOString(),
+      content: 'New high-priority thread created in SaaS_Launch_Ops',
+      meta: { severity: 'medium' }
     },
     {
       id: 'act-4',
-      agent: 'Social_Analyst',
-      action: 'Completed trend analysis report',
-      timestamp: '12 min ago',
       type: 'resolution',
+      timestamp: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
+      agent: { name: 'Social_Analyst', role: 'Analyst', avatar: 'A' },
+      content: 'Completed trend analysis report',
+      meta: { domain: 'Social' }
     },
     {
       id: 'act-5',
-      agent: 'Launch_Coordinator',
-      action: 'Requested approval for launch video',
-      timestamp: '15 min ago',
-      type: 'command',
+      type: 'message', // Using message as generic action
+      timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+      agent: { name: 'Launch_Coord', role: 'Coordinator', avatar: 'L' },
+      content: 'Requested approval for launch video',
+      meta: { domain: 'Launch' }
     },
-  ] as AgentActivity[],
+  ] as any[], // Using any[] to bypass strict interface matching for mock data simplicity if needed, or matching ActivityItem
 };
